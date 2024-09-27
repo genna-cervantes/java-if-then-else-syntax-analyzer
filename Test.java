@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
 import java.util.regex.Matcher;
@@ -31,7 +32,21 @@ class ValidationResult {
     }
 }
 
+class CodeBlock {
+    public HashMap<Integer, String> statementMap = new HashMap<>();
+
+    public CodeBlock(HashMap<Integer, String> statementMap){
+        this.statementMap = statementMap;
+    }
+
+    public void print(){
+        System.out.println(statementMap);
+    }
+}
+
 class Test {
+
+    private static int codeBlockCount = 0;
 
     public static void main(String[] args) {
 
@@ -60,14 +75,70 @@ class Test {
             return;
         }
 
-        // test number of brackets first before splitting
-        String[] codeBlocks = sb.toString().split("(?<=})");
+        ArrayList<CodeBlock> codeBlocks = new ArrayList<>(); 
+        HashMap<Integer, String> codeBlockStatementMap = new HashMap<>();            
+        
+        
+        // 3 - 0 1 2 
+        String universalStatement = "";
+        int localLineCount = 0;
 
-        if (checkIf(codeBlocks[0])){
-            System.out.println("right syntax");
-        }else{
-            System.out.println("wrong syntax");
+        for (int i = 0; i <= (lineCount + codeBlockCount) + 1; i++){
+            String statement;
+
+            if (!universalStatement.equals("")){
+                statement = universalStatement;
+                universalStatement = "";
+            }else{
+                statement = statementMap.get(localLineCount);
+                localLineCount++;
+            }
+
+            // check string is not empty
+            if (statement instanceof String && !statement.equals("")){
+    
+                if (statement.indexOf('}') == -1){
+                    codeBlockStatementMap.put(localLineCount, statement);
+                    continue;
+                }
+    
+                if (statement.indexOf('}') != -1){
+                    int index = statement.indexOf('}') + 1;
+                    String left = statement.substring(0, index);
+                    String right = statement.substring(index);
+    
+                    codeBlockStatementMap.put(localLineCount, left);
+                    universalStatement = right;
+                    i++;
+                    
+                    codeBlocks.add(new CodeBlock(new HashMap<>(codeBlockStatementMap)));
+                    codeBlockStatementMap.clear();
+    
+                }
+            }
+
         }
+
+        // if (bool) {
+        //     something;
+        //     } else if (bool) {
+        //     something;
+        //     } else {
+        //     something
+        //     }
+
+        for (CodeBlock cb: codeBlocks){
+            cb.print();
+        }
+
+        // test number of brackets first before splitting kasi nakabase sa brackets ung splitting
+        // String[] codeBlocks = sb.toString().split("(?<=})");
+
+        // if (checkIf(codeBlocks[0])){
+        //     System.out.println("right syntax");
+        // }else{
+        //     System.out.println("wrong syntax");
+        // }
 
 
         // for (String s: codeBlocks){
@@ -89,6 +160,7 @@ class Test {
                 }
                 if (s == '}') {
                     counter--;
+                    codeBlockCount++;
                     if (counter < 0) {
                         ValidationResult valRes = new ValidationResult("incorrect bracket use - missing partner bracket", lineCount - 1, false);
                         return valRes;
