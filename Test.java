@@ -1,30 +1,62 @@
-//import java.util.ArrayList;
-
+import java.util.HashMap;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+class ValidationResult {
+    private String message;
+    private int line;
+    private boolean status; // true is no error false is error
+
+    public ValidationResult(String message, int line, boolean status){
+        this.message = message;
+        this.line = line;
+        this.status = status;
+    }
+
+    public ValidationResult(boolean status){
+        this.status = status;
+    }
+
+    public boolean getStatus(){
+        return this.status;
+    }
+
+    public String getMessage(){
+        return this.message;
+    }
+
+    public int getLine(){
+        return this.line;
+    }
+}
 
 class Test {
 
     public static void main(String[] args) {
 
-        //ArrayList<String> inputArr = new ArrayList<>();
+        HashMap<Integer, String> statementMap = new HashMap<>();
         StringBuilder sb = new StringBuilder("");
         String inputStr = new String();
 
         Scanner sc = new Scanner(System.in);
 
         System.out.println("Please enter the if-then-else statement: (input \\q to exit)");
+
+        int lineCount = 0;
         while (!inputStr.equals("\\q")) {
             inputStr = sc.nextLine();
-            // inputArr.add(inputStr);
-            sb.append(inputStr);
+            statementMap.put(lineCount, inputStr);
+            lineCount++;
+            // sb.append(inputStr);
         }
 
         sc.close();
 
-        if (!checkBrackets(sb.toString())) {
-            System.out.println("Syntax Error: Incorrect brackets");
+        ValidationResult checkBracketsResult = checkBrackets(statementMap, lineCount);
+        if (!checkBracketsResult.getStatus()) {
+            String errStr = String.format("Error: %s at line %d", checkBracketsResult.getMessage(), checkBracketsResult.getLine());
+            System.out.println(errStr);
             return;
         }
 
@@ -43,25 +75,33 @@ class Test {
         // }
     }
 
-    private static boolean checkBrackets(String statement) {
+    private static ValidationResult checkBrackets(HashMap<Integer, String> statementMap, int lineCount) {
 
         int counter = 0;
+        for (int i = 0; i < lineCount; i++){
+            String statement = statementMap.get(i);
 
-        char[] statementCharArr = statement.toCharArray();
+            char[] statementCharArr = statement.toCharArray();
 
-        for (char s : statementCharArr) {
-            if (s == '{') {
-                counter++;
-            }
-            if (s == '}') {
-                counter--;
-                if (counter < 0) {
-                    return false;
+            for (char s : statementCharArr) {
+                if (s == '{') {
+                    counter++;
+                }
+                if (s == '}') {
+                    counter--;
+                    if (counter < 0) {
+                        ValidationResult valRes = new ValidationResult("incorrect bracket use - missing partner bracket", lineCount - 1, false);
+                        return valRes;
+                    }
                 }
             }
         }
 
-        return counter == 0;
+        if (counter != 0){
+            ValidationResult valRes = new ValidationResult("incorrect bracket use - missing partner bracket", lineCount - 1, false);
+            return valRes;
+        }
+        return new ValidationResult(counter == 0);
     }
 
     private static boolean checkParenthesis(String statement){
@@ -73,8 +113,6 @@ class Test {
         while (matcher.find()) {
             extractedParenthesis.append(matcher.group()); // Append found parentheses to the result
         }
-
-        System.out.println(extractedParenthesis);
 
         // adjacent parenthesis check
         if (extractedParenthesis.charAt(extractedParenthesis.length() - 1) == ')'){
@@ -107,10 +145,10 @@ class Test {
     private static boolean checkBooleanExpression(String ifBlockTrimmed){
         
         int startIndex = ifBlockTrimmed.indexOf('(') + 1;
-        int endIndex = ifBlockTrimmed.indexOf(')');
+        int endIndex = ifBlockTrimmed.lastIndexOf(')');
         String booleanExpression = ifBlockTrimmed.substring(startIndex, endIndex);
 
-        // System.out.println(booleanExpression);
+        System.out.println(booleanExpression);
 
         // logical expressions ( && || ! )
         // relational expressins ( == <= )
