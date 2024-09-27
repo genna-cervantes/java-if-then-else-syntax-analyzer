@@ -65,15 +65,25 @@ class Test {
     private static boolean checkParenthesis(String statement){
         
         int counter = 0;
+        int openCounter = 0;
+        int closeCounter = 0;
 
         char[] statementCharArr = statement.toCharArray();
 
         for (char s : statementCharArr) {
+            
+            // handles check for one pair only 
+            if (openCounter > 1 || closeCounter > 1){
+                return false;
+            }
+
             if (s == '(') {
                 counter++;
+                openCounter++;
             }
             if (s == ')') {
                 counter--;
+                closeCounter++;
                 if (counter < 0) {
                     return false;
                 }
@@ -82,6 +92,8 @@ class Test {
 
         return counter == 0;
     }
+
+    // private static boolean checkBooleanExpression()
 
     private static boolean checkIf(String ifBlock) {
 
@@ -101,7 +113,7 @@ class Test {
         }
         
         // check ung loob nung expression if boolean ba
-        
+
 
         return true;
     }
