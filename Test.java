@@ -1,9 +1,11 @@
 //import java.util.ArrayList;
+
 import java.util.Scanner;
 
 class Test {
+
     public static void main(String[] args) {
-        
+
         //ArrayList<String> inputArr = new ArrayList<>();
         StringBuilder sb = new StringBuilder("");
         String inputStr = new String();
@@ -19,40 +21,39 @@ class Test {
 
         sc.close();
 
-        String statement = sb.toString();
-
-        if(checkBrackets(statement)){
-            System.out.println("right bracket count");
-        }else{
-            System.out.println("wrong bracket count");
+        if (!checkBrackets(sb.toString())) {
+            System.out.println("Syntax Error: Incorrect brackets");
+            return;
         }
 
         // test number of brackets first before splitting
-        // String[] codeBlocks = sb.toString().split("(?<=})");
+        String[] codeBlocks = sb.toString().split("(?<=})");
+
+        if (checkIf(codeBlocks[0])){
+            System.out.println("right syntax");
+        }else{
+            System.out.println("wrong syntax");
+        }
+
 
         // for (String s: codeBlocks){
         //     System.out.println(s);
         // }
-
-        // if(checkIf(codeBlocks[0])){
-        //     System.out.println("succcesss");
-        // }
-
     }
 
-    private static boolean checkBrackets(String statement){
-        
+    private static boolean checkBrackets(String statement) {
+
         int counter = 0;
 
         char[] statementCharArr = statement.toCharArray();
 
-        for (char s: statementCharArr){
-            if (s == '{'){
+        for (char s : statementCharArr) {
+            if (s == '{') {
                 counter++;
             }
-            if (s == '}'){
+            if (s == '}') {
                 counter--;
-                if (counter < 0){
+                if (counter < 0) {
                     return false;
                 }
             }
@@ -61,7 +62,22 @@ class Test {
         return counter == 0;
     }
 
-    private static boolean checkIf(String ifBlock){
+    private static boolean checkIf(String ifBlock) {
+
+        System.out.println(ifBlock);
+
+        // check ung loob nung expression if boolean ba
+        // ung loob basta nag eend sa ;
+        
+        // if if ba ung starting
+        String ifBlockTrimmed = ifBlock.trim();        
+        if (!ifBlockTrimmed.matches("if\\s*\\(.*")){
+            return false;
+        }
+        
+        // check ung expression ung number of parenthesis
+
+
         return true;
     }
 }
