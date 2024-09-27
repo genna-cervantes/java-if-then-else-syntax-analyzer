@@ -1,6 +1,8 @@
 //import java.util.ArrayList;
 
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 class Test {
 
@@ -64,36 +66,63 @@ class Test {
 
     private static boolean checkParenthesis(String statement){
         
-        int counter = 0;
-        int openCounter = 0;
-        int closeCounter = 0;
+        StringBuilder extractedParenthesis = new StringBuilder();
+        Pattern pattern = Pattern.compile("[()]"); // Regex to match '(' or ')'
+        Matcher matcher = pattern.matcher(statement);
+        
+        while (matcher.find()) {
+            extractedParenthesis.append(matcher.group()); // Append found parentheses to the result
+        }
 
-        char[] statementCharArr = statement.toCharArray();
+        System.out.println(extractedParenthesis);
 
-        for (char s : statementCharArr) {
-            
-            // handles check for one pair only 
-            if (openCounter > 1 || closeCounter > 1){
-                return false;
-            }
-
-            if (s == '(') {
-                counter++;
-                openCounter++;
-            }
-            if (s == ')') {
-                counter--;
-                closeCounter++;
-                if (counter < 0) {
+        // adjacent parenthesis check
+        if (extractedParenthesis.charAt(extractedParenthesis.length() - 1) == ')'){
+            if (extractedParenthesis.charAt(extractedParenthesis.length() - 2) == '('){
+                if (extractedParenthesis.length() != 2){
                     return false;
                 }
             }
         }
 
+        int counter = 0;
+        for (int i = 0; i < extractedParenthesis.length(); i++){
+
+            if (extractedParenthesis.charAt(i) == '('){
+                counter++;
+            }
+
+            if (extractedParenthesis.charAt(i) == ')'){
+                counter--;
+                if (counter < 0){
+                    return false;
+                }
+            }
+
+        }
+
         return counter == 0;
     }
 
-    // private static boolean checkBooleanExpression()
+    private static boolean checkBooleanExpression(String ifBlockTrimmed){
+        
+        int startIndex = ifBlockTrimmed.indexOf('(') + 1;
+        int endIndex = ifBlockTrimmed.indexOf(')');
+        String booleanExpression = ifBlockTrimmed.substring(startIndex, endIndex);
+
+        // System.out.println(booleanExpression);
+
+        // logical expressions ( && || ! )
+        // relational expressins ( == <= )
+        // boolean variables ( bool )
+        // methods returning bool ( function() )
+        // instanceof operator ( obj instanceof Obj ) -- solo lang
+        // combination of expressions
+
+
+        return true;
+
+    }
 
     private static boolean checkIf(String ifBlock) {
 
@@ -113,7 +142,10 @@ class Test {
         }
         
         // check ung loob nung expression if boolean ba
-
+        
+        if (!checkBooleanExpression(ifBlockTrimmed)){
+            return false;
+        }
 
         return true;
     }
