@@ -62,11 +62,31 @@ class Test {
         return counter == 0;
     }
 
+    private static boolean checkParenthesis(String statement){
+        
+        int counter = 0;
+
+        char[] statementCharArr = statement.toCharArray();
+
+        for (char s : statementCharArr) {
+            if (s == '(') {
+                counter++;
+            }
+            if (s == ')') {
+                counter--;
+                if (counter < 0) {
+                    return false;
+                }
+            }
+        }
+
+        return counter == 0;
+    }
+
     private static boolean checkIf(String ifBlock) {
 
         System.out.println(ifBlock);
 
-        // check ung loob nung expression if boolean ba
         // ung loob basta nag eend sa ;
         
         // if if ba ung starting
@@ -76,7 +96,12 @@ class Test {
         }
         
         // check ung expression ung number of parenthesis
-
+        if (!checkParenthesis(ifBlockTrimmed)){
+            return false;
+        }
+        
+        // check ung loob nung expression if boolean ba
+        
 
         return true;
     }
