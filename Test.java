@@ -118,6 +118,7 @@ class Test {
         for (int i = 0; i <= (lineCount + codeBlockCount) + 1; i++){
             String statement;
 
+            
             if (!universalStatement.equals("")){
                 statement = universalStatement;
                 universalStatement = "";
@@ -127,7 +128,7 @@ class Test {
             }
 
             // check string is not empty
-            if (statement instanceof String && !statement.equals("")){
+            if (statement instanceof String){
     
                 if (statement.indexOf('}') == -1){
                     codeBlockStatementMap.put(localLineCount, statement);
@@ -155,7 +156,15 @@ class Test {
         //     cb.print();
         // }
 
-        boolean checkIfResult = checkIf(codeBlocks.get(0));
+        // throw error tapos try catch ko nlng lahat
+        ValidationResult checkIfResult = checkIf(codeBlocks.get(0));
+        if (!checkIfResult.getStatus()){
+            String errStr = String.format("Error: %s at line %d", checkIfResult.getMessage(), checkIfResult.getLine());
+            System.out.println(errStr);
+            return;    
+        }
+
+
 
         // test number of brackets first before splitting kasi nakabase sa brackets ung splitting
         // String[] codeBlocks = sb.toString().split("(?<=})");
@@ -230,6 +239,11 @@ class Test {
         int counter = 0;
         for (int i = 0; i < lineCount; i++){
             String statement = statementMap.get(i + 1);
+
+            // checks for empty lines in input
+            if (statement == null){
+                continue;
+            }
 
             char[] statementCharArr = statement.toCharArray();
 
@@ -315,7 +329,7 @@ class Test {
         
     }
 
-    private static boolean checkIf(CodeBlock cb) {
+    private static ValidationResult checkIf(CodeBlock cb) {
 
         ValidationResult checkParenthesisResult = checkParenthesis(cb);
 
@@ -323,6 +337,24 @@ class Test {
             System.out.println(checkParenthesisResult.getLine());
             System.out.println(checkParenthesisResult.getMessage());
         }else{
+
+            // checks if the if code block starts with if ()
+            for (int i = 0; i < cb.getLength(); i++){
+                String[] lines = cb.getValues();
+                String s = lines[i];
+
+                if(!s.trim().isEmpty()){
+                    
+                    if (!s.trim().matches("^if\\s*\\(.*$")){
+                        ValidationResult valRes = new ValidationResult("illegal start of if statement", i + 1, false);
+                        return valRes;
+                    }else{
+                        // tama lng ung start
+                        break;
+                    }
+                }
+            }
+
             ArrayList<ExpressionBlock> expressionBlocks = branchExpression(cb);
             
             for (ExpressionBlock eb: expressionBlocks){
@@ -330,6 +362,8 @@ class Test {
             }
         }
 
-        return true;
+        // return success;
+        ValidationResult valRes = new ValidationResult(true);
+        return valRes;
     }
 }
