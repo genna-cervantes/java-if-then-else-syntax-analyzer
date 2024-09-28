@@ -1,8 +1,6 @@
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 class ValidationResult {
     private String message;
@@ -34,6 +32,7 @@ class ValidationResult {
 
 class CodeBlock {
     public HashMap<Integer, String> statementMap = new HashMap<>();
+    // String[] s = statementMap.values().toArray(new String[0]);
 
     public CodeBlock(HashMap<Integer, String> statementMap){
         this.statementMap = statementMap;
@@ -41,6 +40,35 @@ class CodeBlock {
 
     public void print(){
         System.out.println(statementMap);
+    }
+
+    public String toString(){
+        StringBuilder sb = new StringBuilder();
+        for (String s: statementMap.values()){
+            sb.append(s);
+        }
+
+        return sb.toString();
+    }
+
+    public String[] getValues(){
+        return statementMap.values().toArray(new String[0]);
+    }
+
+    public int getLength(){
+        return statementMap.size();
+    }
+
+    public HashMap<Integer, String> getHashMap(){
+        return this.statementMap;
+    }
+}
+
+class ExpressionBlock {
+    public HashMap<Integer, String> statementMap = new HashMap<>();
+
+    public ExpressionBlock(HashMap<Integer, String> statementMap){
+        this.statementMap = statementMap;
     }
 }
 
@@ -119,17 +147,11 @@ class Test {
 
         }
 
-        // if (bool) {
-        //     something;
-        //     } else if (bool) {
-        //     something;
-        //     } else {
-        //     something
-        //     }
+        // for (CodeBlock cb: codeBlocks){
+        //     cb.print();
+        // }
 
-        for (CodeBlock cb: codeBlocks){
-            cb.print();
-        }
+        boolean checkIfResult = checkIf(codeBlocks.get(0));
 
         // test number of brackets first before splitting kasi nakabase sa brackets ung splitting
         // String[] codeBlocks = sb.toString().split("(?<=})");
@@ -176,44 +198,6 @@ class Test {
         return new ValidationResult(counter == 0);
     }
 
-    private static boolean checkParenthesis(String statement){
-        
-        StringBuilder extractedParenthesis = new StringBuilder();
-        Pattern pattern = Pattern.compile("[()]"); // Regex to match '(' or ')'
-        Matcher matcher = pattern.matcher(statement);
-        
-        while (matcher.find()) {
-            extractedParenthesis.append(matcher.group()); // Append found parentheses to the result
-        }
-
-        // adjacent parenthesis check
-        if (extractedParenthesis.charAt(extractedParenthesis.length() - 1) == ')'){
-            if (extractedParenthesis.charAt(extractedParenthesis.length() - 2) == '('){
-                if (extractedParenthesis.length() != 2){
-                    return false;
-                }
-            }
-        }
-
-        int counter = 0;
-        for (int i = 0; i < extractedParenthesis.length(); i++){
-
-            if (extractedParenthesis.charAt(i) == '('){
-                counter++;
-            }
-
-            if (extractedParenthesis.charAt(i) == ')'){
-                counter--;
-                if (counter < 0){
-                    return false;
-                }
-            }
-
-        }
-
-        return counter == 0;
-    }
-
     private static boolean checkBooleanExpression(String ifBlockTrimmed){
         
         int startIndex = ifBlockTrimmed.indexOf('(') + 1;
@@ -234,27 +218,56 @@ class Test {
 
     }
 
-    private static boolean checkIf(String ifBlock) {
+    private static ValidationResult checkParenthesis(CodeBlock cb){
+ 
+        HashMap<Integer, String> statementMap = cb.getHashMap();
+        int lineCount = cb.getLength();
 
-        System.out.println(ifBlock);
+        int counter = 0;
+        for (int i = 0; i < lineCount; i++){
+            String statement = statementMap.get(i + 1);
 
-        // ung loob basta nag eend sa ;
-        
-        // if if ba ung starting
-        String ifBlockTrimmed = ifBlock.trim();        
-        if (!ifBlockTrimmed.matches("if\\s*\\(.*")){
-            return false;
+            char[] statementCharArr = statement.toCharArray();
+
+            for (int j = 0; j < statementCharArr.length; j++) {
+                char s = statementCharArr[j];
+                if (s == '(') {
+                    counter++;
+                }
+
+                if (s == ')') {
+                    // Check for adjacent parentheses without content
+                    if (j > 0 && statementCharArr[j - 1] == '(') {
+                        // If adjacent parentheses are found and there are more characters between them
+                        if (counter == 1) { // Ensure they are not inside another pair
+                            return new ValidationResult(
+                                "Incorrect parenthesis use - adjacent parentheses found", i + 1, false
+                            );
+                        }
+                    }
+
+                    counter--; // Decrease parenthesis counter
+                }
+            }
         }
-        
-        // check ung expression ung number of parenthesis
-        if (!checkParenthesis(ifBlockTrimmed)){
-            return false;
+
+        if (counter != 0){
+            ValidationResult valRes = new ValidationResult("incorrect parenthesis use - missing partner parenthesis", lineCount - 1, false);
+            return valRes;
         }
-        
-        // check ung loob nung expression if boolean ba
-        
-        if (!checkBooleanExpression(ifBlockTrimmed)){
-            return false;
+        return new ValidationResult(counter == 0);
+    }
+
+    private static boolean checkIf(CodeBlock cb) {
+
+        System.out.println(cb.toString());
+        ValidationResult checkParenthesisResult = checkParenthesis(cb);
+
+        if (!checkParenthesisResult.getStatus()){
+            System.out.println(checkParenthesisResult.getLine());
+            System.out.println(checkParenthesisResult.getMessage());
+        }else{
+            System.out.println("correct notation");
         }
 
         return true;
