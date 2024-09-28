@@ -70,6 +70,10 @@ class ExpressionBlock {
     public ExpressionBlock(HashMap<Integer, String> statementMap){
         this.statementMap = statementMap;
     }
+
+    public void print(){
+        System.out.println(statementMap);
+    }
 }
 
 class Test {
@@ -258,16 +262,72 @@ class Test {
         return new ValidationResult(counter == 0);
     }
 
+    
+    private static ArrayList<ExpressionBlock> branchExpression(CodeBlock cb){
+
+        ArrayList<ExpressionBlock> expressionBlocks = new ArrayList<>();
+
+        int lineCount = cb.getLength();
+        HashMap<Integer, String> statementMap = cb.getHashMap();
+
+        HashMap<Integer, String> expressionStatementMap = new HashMap<>();
+        
+        int localLineCount = 0;
+        String universalStatement = "";
+
+        for (int i = 0; i <= (lineCount + codeBlockCount) + 1; i++){
+            String statement;
+
+            if (!universalStatement.equals("")){
+                statement = universalStatement;
+                universalStatement = "";
+            }else{
+                statement = statementMap.get(localLineCount);
+                localLineCount++;
+            }
+
+            // check string is not empty
+            if (statement instanceof String && !statement.equals("")){
+    
+                if (statement.indexOf(')') == -1){
+                    expressionStatementMap.put(localLineCount, statement);
+                    continue;
+                }
+    
+                if (statement.indexOf(')') != -1){
+                    int index = statement.indexOf(')') + 1;
+                    String left = statement.substring(0, index);
+                    String right = statement.substring(index);
+    
+                    expressionStatementMap.put(localLineCount, left);
+                    universalStatement = right;
+                    i++;
+                    
+                    expressionBlocks.add(new ExpressionBlock(new HashMap<>(expressionStatementMap)));
+                    expressionStatementMap.clear();
+    
+                }
+            }
+
+        }
+
+        return expressionBlocks;
+        
+    }
+
     private static boolean checkIf(CodeBlock cb) {
 
-        System.out.println(cb.toString());
         ValidationResult checkParenthesisResult = checkParenthesis(cb);
 
         if (!checkParenthesisResult.getStatus()){
             System.out.println(checkParenthesisResult.getLine());
             System.out.println(checkParenthesisResult.getMessage());
         }else{
-            System.out.println("correct notation");
+            ArrayList<ExpressionBlock> expressionBlocks = branchExpression(cb);
+            
+            for (ExpressionBlock eb: expressionBlocks){
+                eb.print();
+            }
         }
 
         return true;
