@@ -58,7 +58,7 @@ public class LexicalAnalyzer {
         CLOSE_BRACKET
     };
 
-    public String getToken(String lex) {
+    public String getToken(String lex, int line) {
         String token = "UNDEFINED";
 
         for (int i = 0; i < tokenPatterns.length; i++) {
@@ -67,7 +67,7 @@ public class LexicalAnalyzer {
 
             if (matcher.find()) {
                 token = tokens[i];
-                System.out.println(token);
+                System.out.println(line + token);
                 return token;
             }
         }
