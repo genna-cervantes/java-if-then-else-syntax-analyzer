@@ -18,12 +18,17 @@ public class Main {
 
         System.out.println("Please type the if else then statement to the console (type \\q to exit):");
         Scanner sc = new Scanner(System.in);
-        ArrayList<Lexeme> inputLexemes = new ArrayList<Lexeme>();
+        ArrayList<Lexeme> inputLexemes = new ArrayList<>();
         String inputLine = "";
         int lineCounter = 0;
 
         while(!inputLine.equals("\\q")){
             inputLine = sc.nextLine();
+            
+            if (inputLine == ""){
+                lineCounter++;
+                continue;
+            }
 
             String[] splitStrings = inputLine.split("\\s+");
 
@@ -38,15 +43,24 @@ public class Main {
         sc.close();
 
         LexicalAnalyzer la = new LexicalAnalyzer();
+        ArrayList<String> tokens = new ArrayList<>();
 
         for (int i = 0; i < inputLexemes.size(); i++){
             if (i >= inputLexemes.size() - 1){
-                return;
+                break;
             }
 
             Lexeme l = inputLexemes.get(i);
 
-            la.getToken(l.lex, l.line);
+            String token = la.getToken(l.lex, l.line);
+
+            // syntax analysis part
+            tokens.add(token);
         }
+
+        System.out.println("hello");
+        SyntaxAnalyzer sa = new SyntaxAnalyzer(tokens);
+
+        sa.parseIfThenElse();
     }
 }
