@@ -1,4 +1,5 @@
 
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -73,5 +74,28 @@ public class LexicalAnalyzer {
         }
 
         return token;
+    }
+
+    public ArrayList<String> tokenizeString(String input){
+        
+        ArrayList<String> recognizedTokens = new ArrayList<>();
+
+        String regex = String.join("|", tokenPatterns);
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(input);
+
+        while (matcher.find()) {
+            String matchedToken = matcher.group();
+            for (int i = 0; i < tokenPatterns.length; i++) {
+                if (matchedToken.matches(tokenPatterns[i])) {
+                    if (!matchedToken.trim().isEmpty()) { 
+                        recognizedTokens.add(tokens[i]);
+                    }
+                    break;
+                }
+            }
+        }
+
+        return recognizedTokens;
     }
 }
