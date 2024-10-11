@@ -75,5 +75,8 @@ public class Main {
             System.out.println(t.token + t.line);
         }
 
+        SyntaxAnalyzer sa = new SyntaxAnalyzer(tokens);
+        sa.parseIfThenElse();
+
     }
 }

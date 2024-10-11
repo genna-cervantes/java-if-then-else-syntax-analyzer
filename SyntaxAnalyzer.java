@@ -5,8 +5,21 @@ public class SyntaxAnalyzer {
 
     ArrayList<String> lexTokens;
 
-    public SyntaxAnalyzer(ArrayList<String> lexTokens) {
+    public SyntaxAnalyzer(ArrayList<Token> tokens) {
+
+        ArrayList<String> lexTokens = new ArrayList<>();
+
+        for (Token t : tokens) {
+            lexTokens.add(t.token);
+        }
+
         this.lexTokens = lexTokens;
+    }
+
+    public void printTokens() {
+        for (String s : lexTokens) {
+            System.out.print(s + " ");
+        }
     }
 
     // "if" "(" <condition> ")" <block> [<else-if>]
@@ -21,6 +34,8 @@ public class SyntaxAnalyzer {
             return false;
         }
         lexTokens.remove(0);
+        System.out.println("passed if");
+        printTokens();
 
         if (!lexTokens.get(0).equals("OPEN_PAREN")) {
             error = "Missing Open Parenthesis";
@@ -28,14 +43,30 @@ public class SyntaxAnalyzer {
             return false;
         }
         lexTokens.remove(0);
+        System.out.println("passed open paren");
+        printTokens();
 
         if (!parseCondition()) {
             error = "Illegal Condition";
             System.out.println(error);
             return false;
         }
+        System.out.println("passed condition");
+        printTokens();
 
-        if (!lexTokens.get(0).equals("CLOSE_PAREN")){
+        // make this a utility or just find a better way to handle out of bounds
+        try {
+
+            if (!lexTokens.get(0).equals("CLOSE_PAREN")) {
+                error = "Wrong Close Paren";
+                System.out.println(error);
+                return false;
+            }
+            lexTokens.remove(0);
+            System.out.println("passed closed paren");
+            printTokens();
+
+        } catch (Exception e) {
             error = "Wrong Close Paren";
             System.out.println(error);
             return false;
@@ -51,11 +82,20 @@ public class SyntaxAnalyzer {
         // try ( condition )
         if (lexTokens.get(0).equals("OPEN_PAREN")) {
             lexTokens.remove(0);
+            System.out.println("passed open paren");
+            printTokens();
 
             if (parseCondition()) { // 1 // 2
-                if (lexTokens.get(0).equals("CLOSE_PAREN")) {
-                    lexTokens.remove(0);
-                    return true;
+
+                try {
+                    // possible mag out of bounds
+                    if (lexTokens.get(0).equals("CLOSE_PAREN")) {
+                        lexTokens.remove(0);
+                        return true;
+                    }
+
+                } catch (Exception e) {
+                    return false;
                 }
             }
         }
@@ -63,15 +103,19 @@ public class SyntaxAnalyzer {
         // try <condition> <operator> <condition>
         // <operator>     ::=  <comparison-operator> | <arithmetic-operator> | <assignment-operator>
         if (parseExpression()) {
-            
+
             if (parseOperator()) {
                 lexTokens.remove(0);
+                System.out.println("passed operator");
+                printTokens();
 
                 if (parseCondition()) {
                     return true;
                 }
             }
 
+            System.out.println("passed simple expression");
+            printTokens();
             return true;
         }
 
