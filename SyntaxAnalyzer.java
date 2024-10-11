@@ -3,7 +3,9 @@ import java.util.ArrayList;
 
 public class SyntaxAnalyzer {
 
+    ArrayList<Token> tokens;
     ArrayList<String> lexTokens;
+    int lexCounter;
 
     public SyntaxAnalyzer(ArrayList<Token> tokens) {
 
@@ -13,6 +15,7 @@ public class SyntaxAnalyzer {
             lexTokens.add(t.token);
         }
 
+        this.tokens = tokens;
         this.lexTokens = lexTokens;
     }
 
@@ -20,6 +23,10 @@ public class SyntaxAnalyzer {
         for (String s : lexTokens) {
             System.out.print(s + " ");
         }
+    }
+
+    public int findLine() {
+        return tokens.get(lexCounter).line + 1;
     }
     
 
@@ -30,29 +37,31 @@ public class SyntaxAnalyzer {
         String error;
 
         if (lexTokens.isEmpty() || !lexTokens.get(0).equals("IF_KEYWORD")) {
-            error = "Illegal start of if else then expression";
+            error = "Illegal start of if else then expression at line: " + findLine();
             // System.out.println(error);
             // return false;
 
             throw new Exception(error);
         }
         lexTokens.remove(0);
+        lexCounter++;
         // System.out.println("passed if");
         // printTokens();
 
         if (lexTokens.isEmpty() || !lexTokens.get(0).equals("OPEN_PAREN")) {
-            error = "Missing Open Parenthesis";
+            error = "Missing Open Parenthesis at line: " + findLine();
             // System.out.println(error);
             // return false;
 
             throw new Exception(error);
         }
         lexTokens.remove(0);
+        lexCounter++;
         // System.out.println("passed open paren");
         // printTokens();
 
         if (!parseCondition()) {
-            error = "Illegal Condition";
+            error = "Illegal Condition at line: " + findLine();
             // System.out.println(error);
             // return false;
 
@@ -62,13 +71,14 @@ public class SyntaxAnalyzer {
         // printTokens();
 
         if (lexTokens.isEmpty() || !lexTokens.get(0).equals("CLOSE_PAREN")) {
-            error = "Wrong Close Paren";
+            error = "Wrong Close Paren at line: " + findLine();
             // System.out.println(error);
             // return false;
 
             throw new Exception(error);
         }
         lexTokens.remove(0);
+        lexCounter++;
         // System.out.println("passed closed paren");
         // printTokens();
 
@@ -83,13 +93,14 @@ public class SyntaxAnalyzer {
 
         if (lexTokens.isEmpty()) {
             // return false;
-            error = "condition cannot be empty";
+            error = "condition cannot be empty at line: " + findLine();
             throw new Exception(error);
         }
 
         // try ( condition )
         if (lexTokens.get(0).equals("OPEN_PAREN")) {
             lexTokens.remove(0);
+            lexCounter++;
             // System.out.println("passed open paren");
             // printTokens();
 
@@ -98,6 +109,7 @@ public class SyntaxAnalyzer {
                 // possible mag out of bounds
                 if (lexTokens.get(0).equals("CLOSE_PAREN")) {
                     lexTokens.remove(0);
+                    lexCounter++;
                     return true;
                 }
 
@@ -110,6 +122,7 @@ public class SyntaxAnalyzer {
 
             if (parseOperator()) {
                 lexTokens.remove(0);
+                lexCounter++;
                 // System.out.println("passed operator");
                 // printTokens();
 
@@ -117,7 +130,7 @@ public class SyntaxAnalyzer {
                     return true;
                 }else{
                     // return false;
-                    error = "illegal condition";
+                    error = "illegal condition at line: " + findLine();
                     throw new Exception(error);
                 }
             }
@@ -127,7 +140,7 @@ public class SyntaxAnalyzer {
             return true;
         }
 
-        error = "Illegal Condition";
+        error = "Illegal Condition at line: " + findLine();
         // return false;
         throw new Exception(error);
     }
@@ -138,7 +151,7 @@ public class SyntaxAnalyzer {
 
         if (lexTokens.isEmpty()){
             // return false;
-            error = "condition cannot be empty";
+            error = "condition cannot be empty at line: " + findLine();
             throw new Exception(error);
         }
 
@@ -154,7 +167,7 @@ public class SyntaxAnalyzer {
             return true;
         }
 
-        error = "Not an Operator";
+        error = "Not an Operator at line: " + findLine();
         throw new Exception(error);
     }
 
@@ -164,7 +177,7 @@ public class SyntaxAnalyzer {
 
         if (lexTokens.isEmpty()){
             // return false;
-            error = "expression cannot be empty";
+            error = "expression cannot be empty at line: " + findLine();
             throw new Exception(error);
         }
 
@@ -178,13 +191,14 @@ public class SyntaxAnalyzer {
         if (lexTokens.get(0).equals("INTEGER_LIT")) {
             System.out.println("returned true from here 2");
             lexTokens.remove(0);
+            lexCounter++;
             return true;
         }
 
         // System.out.println("returned false");
         // error = "Not an expression";
         // return false;
-        error = "illegal expression";
+        error = "illegal expression at line: " + findLine();
         throw new Exception(error);
     }
 
