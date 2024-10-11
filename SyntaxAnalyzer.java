@@ -9,14 +9,14 @@ public class SyntaxAnalyzer {
 
     public SyntaxAnalyzer(ArrayList<Token> tokens) {
 
-        ArrayList<String> lexTokens = new ArrayList<>();
+        ArrayList<String> lexTokensCopy = new ArrayList<>();
 
         for (Token t : tokens) {
-            lexTokens.add(t.token);
+            lexTokensCopy.add(t.token);
         }
 
         this.tokens = tokens;
-        this.lexTokens = lexTokens;
+        this.lexTokens = lexTokensCopy;
     }
 
     public void printTokens() {
@@ -82,10 +82,112 @@ public class SyntaxAnalyzer {
         // System.out.println("passed closed paren");
         // printTokens();
 
+        if (!parseBlock()){
+            error = "Illegal Block: " + findLine();
+            // System.out.println(error);
+            // return false;
 
+            throw new Exception(error);   
+        }
 
         return true;
     }
+
+    // <block>        ::=  "{" <statement> "}"
+    public boolean parseBlock() throws Exception{
+        String error;
+
+        if (lexTokens.isEmpty()) {
+            // return false;
+            error = "missing block at line: " + findLine();
+            throw new Exception(error);
+        }
+
+        if (!lexTokens.get(0).equals("OPEN_BRACKET")){
+            error = "Missing Open Bracket at line: " + findLine();
+            // System.out.println(error);
+            // return false;
+
+            throw new Exception(error);
+        }
+        lexTokens.remove(0);
+        lexCounter++;
+
+        if (!parseStatement()){
+            error = "Illegal Statement: " + findLine();
+            // System.out.println(error);
+            // return false;
+
+            throw new Exception(error);
+        }
+        
+        return true;
+    }
+
+    // <statement>    ::=  " " | <condition> | <declaration> -- di keri ung " "
+    public boolean parseStatement() throws Exception {
+        String error;
+
+        if (parseCondition()){
+            // error = "Illegal Block Scope Condition: " + findLine();
+            // // System.out.println(error);
+            // // return false;
+
+            // throw new Exception(error);
+            return true;
+        }
+
+        if (parseDeclaration()){
+            // error = "Illegal Block Scope Declaration: " + findLine();
+            // // System.out.println(error);
+            // // return false;
+
+            // throw new Exception(error);
+            return true;
+        }
+        
+        error = "Illegal Block Statement: " + findLine();
+        throw new Exception(error);
+    }
+
+    // <declaration>  ::= <keyword> <identifier> ";"
+    public boolean parseDeclaration() throws Exception{
+        String error;
+
+        if (!lexTokens.get(0).equals("DECLARATION_KEYWORDS")){
+            error = "Illegal Start of Declaration: " + findLine();
+            // System.out.println(error);
+            // return false;
+
+            throw new Exception(error);
+        }
+        lexTokens.remove(0);
+        lexCounter++;
+
+        if (!lexTokens.get(0).equals("IDENT")){
+            error = "Illegal Declaration: " + findLine();
+            // System.out.println(error);
+            // return false;
+
+            throw new Exception(error);
+        }
+        lexTokens.remove(0);
+        lexCounter++;
+
+        if (!lexTokens.get(0).equals("SEMICOLON")){
+            error = "Missing Semicolon: " + findLine();
+            // System.out.println(error);
+            // return false;
+
+            throw new Exception(error);
+        }
+        lexTokens.remove(0);
+        lexCounter++;
+
+        
+        return true;
+    }
+
 
     // <condition> ::= <expression> | “(“ <condition> “)” | <condition> <operator> <condition>
     public boolean parseCondition() throws Exception {
@@ -140,9 +242,9 @@ public class SyntaxAnalyzer {
             return true;
         }
 
-        error = "Illegal Condition at line: " + findLine();
-        // return false;
-        throw new Exception(error);
+        // error = "Illegal Condition at line: " + findLine();
+        return false;
+        // throw new Exception(error);
     }
 
     // <operator>     ::=  <comparison-operator> | <arithmetic-operator> | <assignment-operator>
@@ -167,8 +269,7 @@ public class SyntaxAnalyzer {
             return true;
         }
 
-        error = "Not an Operator at line: " + findLine();
-        throw new Exception(error);
+        return false;
     }
 
     // <expression>   ::= <identifier> | <literal> 
@@ -197,9 +298,9 @@ public class SyntaxAnalyzer {
 
         // System.out.println("returned false");
         // error = "Not an expression";
-        // return false;
-        error = "illegal expression at line: " + findLine();
-        throw new Exception(error);
+        return false;
+        // error = "illegal expression at line: " + findLine();
+        // throw new Exception(error);
     }
 
 }
