@@ -76,7 +76,14 @@ public class Main {
         }
 
         SyntaxAnalyzer sa = new SyntaxAnalyzer(tokens);
-        sa.parseIfThenElse();
+        try {
+            sa.parseIfThenElse();
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+
+        // each syntax error thwors an error
+        // handle nlgn try catch dito
 
     }
 }

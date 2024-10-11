@@ -21,82 +21,86 @@ public class SyntaxAnalyzer {
             System.out.print(s + " ");
         }
     }
+    
 
     // "if" "(" <condition> ")" <block> [<else-if>]
-    public boolean parseIfThenElse() {
+    public boolean parseIfThenElse() throws Exception {
 
         System.out.println("parsing if then else");
         String error;
 
-        if (!lexTokens.get(0).equals("IF_KEYWORD")) {
+        if (lexTokens.isEmpty() || !lexTokens.get(0).equals("IF_KEYWORD")) {
             error = "Illegal start of if else then expression";
-            System.out.println(error);
-            return false;
-        }
-        lexTokens.remove(0);
-        System.out.println("passed if");
-        printTokens();
+            // System.out.println(error);
+            // return false;
 
-        if (!lexTokens.get(0).equals("OPEN_PAREN")) {
-            error = "Missing Open Parenthesis";
-            System.out.println(error);
-            return false;
+            throw new Exception(error);
         }
         lexTokens.remove(0);
-        System.out.println("passed open paren");
-        printTokens();
+        // System.out.println("passed if");
+        // printTokens();
+
+        if (lexTokens.isEmpty() || !lexTokens.get(0).equals("OPEN_PAREN")) {
+            error = "Missing Open Parenthesis";
+            // System.out.println(error);
+            // return false;
+
+            throw new Exception(error);
+        }
+        lexTokens.remove(0);
+        // System.out.println("passed open paren");
+        // printTokens();
 
         if (!parseCondition()) {
             error = "Illegal Condition";
-            System.out.println(error);
-            return false;
+            // System.out.println(error);
+            // return false;
+
+            throw new Exception(error);
         }
-        System.out.println("passed condition");
-        printTokens();
+        // System.out.println("passed condition");
+        // printTokens();
 
-        // make this a utility or just find a better way to handle out of bounds
-        try {
-
-            if (!lexTokens.get(0).equals("CLOSE_PAREN")) {
-                error = "Wrong Close Paren";
-                System.out.println(error);
-                return false;
-            }
-            lexTokens.remove(0);
-            System.out.println("passed closed paren");
-            printTokens();
-
-        } catch (Exception e) {
+        if (lexTokens.isEmpty() || !lexTokens.get(0).equals("CLOSE_PAREN")) {
             error = "Wrong Close Paren";
-            System.out.println(error);
-            return false;
+            // System.out.println(error);
+            // return false;
+
+            throw new Exception(error);
         }
+        lexTokens.remove(0);
+        // System.out.println("passed closed paren");
+        // printTokens();
+
+
 
         return true;
     }
 
     // <condition> ::= <expression> | “(“ <condition> “)” | <condition> <operator> <condition>
-    public boolean parseCondition() {
+    public boolean parseCondition() throws Exception {
         String error;
+
+        if (lexTokens.isEmpty()) {
+            // return false;
+            error = "condition cannot be empty";
+            throw new Exception(error);
+        }
 
         // try ( condition )
         if (lexTokens.get(0).equals("OPEN_PAREN")) {
             lexTokens.remove(0);
-            System.out.println("passed open paren");
-            printTokens();
+            // System.out.println("passed open paren");
+            // printTokens();
 
             if (parseCondition()) { // 1 // 2
 
-                try {
-                    // possible mag out of bounds
-                    if (lexTokens.get(0).equals("CLOSE_PAREN")) {
-                        lexTokens.remove(0);
-                        return true;
-                    }
-
-                } catch (Exception e) {
-                    return false;
+                // possible mag out of bounds
+                if (lexTokens.get(0).equals("CLOSE_PAREN")) {
+                    lexTokens.remove(0);
+                    return true;
                 }
+
             }
         }
 
@@ -106,26 +110,37 @@ public class SyntaxAnalyzer {
 
             if (parseOperator()) {
                 lexTokens.remove(0);
-                System.out.println("passed operator");
-                printTokens();
+                // System.out.println("passed operator");
+                // printTokens();
 
                 if (parseCondition()) {
                     return true;
+                }else{
+                    // return false;
+                    error = "illegal condition";
+                    throw new Exception(error);
                 }
             }
 
-            System.out.println("passed simple expression");
-            printTokens();
+            // System.out.println("passed simple expression");
+            // printTokens();
             return true;
         }
 
         error = "Illegal Condition";
-        return false;
+        // return false;
+        throw new Exception(error);
     }
 
     // <operator>     ::=  <comparison-operator> | <arithmetic-operator> | <assignment-operator>
-    public boolean parseOperator() {
+    public boolean parseOperator() throws Exception {
         String error;
+
+        if (lexTokens.isEmpty()){
+            // return false;
+            error = "condition cannot be empty";
+            throw new Exception(error);
+        }
 
         if (lexTokens.get(0).equals("COMPARISON_OP")) {
             return true;
@@ -140,26 +155,37 @@ public class SyntaxAnalyzer {
         }
 
         error = "Not an Operator";
-        return false;
+        throw new Exception(error);
     }
 
     // <expression>   ::= <identifier> | <literal> 
-    public boolean parseExpression() {
+    public boolean parseExpression() throws Exception {
         String error;
+
+        if (lexTokens.isEmpty()){
+            // return false;
+            error = "expression cannot be empty";
+            throw new Exception(error);
+        }
 
         // try identifier
         if (lexTokens.get(0).equals("IDENT")) {
+            System.out.println("returned true from here");
             lexTokens.remove(0);
             return true;
         }
 
-        if (lexTokens.get(0).equals("INT_LIT")) {
+        if (lexTokens.get(0).equals("INTEGER_LIT")) {
+            System.out.println("returned true from here 2");
             lexTokens.remove(0);
             return true;
         }
 
-        error = "Not an expression";
-        return false;
+        // System.out.println("returned false");
+        // error = "Not an expression";
+        // return false;
+        error = "illegal expression";
+        throw new Exception(error);
     }
 
 }
