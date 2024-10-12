@@ -67,8 +67,8 @@ public class SyntaxAnalyzer {
 
             throw new Exception(error);
         }
-        // System.out.println("passed condition");
-        // printTokens();
+        System.out.println("passed condition");
+        printTokens();
 
         if (lexTokens.isEmpty() || !lexTokens.get(0).equals("CLOSE_PAREN")) {
             error = "Wrong Close Paren at line: " + findLine();
@@ -120,6 +120,18 @@ public class SyntaxAnalyzer {
 
             throw new Exception(error);
         }
+        // else kung whitespace check kung close bracket na valid pa rin nmn tapos return true na ung start ng if else na mag hhandle pag madoble ung close bracket?
+
+
+        if (!lexTokens.get(0).equals("CLOSE_BRACKET")){
+            error = "Missing Close Bracket at line: " + findLine();
+            // System.out.println(error);
+            // return false;
+
+            throw new Exception(error);
+        }
+        lexTokens.remove(0);
+        lexCounter++;
         
         return true;
     }
@@ -266,6 +278,14 @@ public class SyntaxAnalyzer {
         }
 
         if (lexTokens.get(0).equals("ASSIGNMENT_OP")) {
+            return true;
+        }
+        
+        if (lexTokens.get(0).equals("SHORTCIRCUIT_OP")) {
+            return true;
+        }
+
+        if (lexTokens.get(0).equals("BITWISE_OP")) {
             return true;
         }
 

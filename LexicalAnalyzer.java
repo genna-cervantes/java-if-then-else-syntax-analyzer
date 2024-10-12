@@ -13,6 +13,8 @@ public class LexicalAnalyzer {
     private String COMPARISON_OP = ">=|<=|==|!=|>|<";
     private String ARITHMETIC_OP = "[+\\-*/]";
     private String ASSIGNMENT_OP = "=";
+    private String SHORTCIRCUIT_OP = "\\|\\||&&";
+    private String BITWISE_OP = "\\||&";
     private String IDENT = "[a-zA-Z$_][a-zA-Z0-9$_]*";
     private String INTEGER_LIT = "[0-9]+";
     private String OPEN_PAREN = "\\(";
@@ -30,6 +32,8 @@ public class LexicalAnalyzer {
         "COMPARISON_OP",
         "ARITHMETIC_OP",
         "ASSIGNMENT_OP",
+        "SHORTCIRCUIT_OP",
+        "BITWISE_OP",
         "IDENT",
         "INTEGER_LIT",
         "OPEN_PAREN",
@@ -47,6 +51,8 @@ public class LexicalAnalyzer {
         COMPARISON_OP,
         ARITHMETIC_OP,
         ASSIGNMENT_OP,
+        SHORTCIRCUIT_OP,
+        BITWISE_OP,
         IDENT,
         INTEGER_LIT,
         OPEN_PAREN,
@@ -63,7 +69,8 @@ public class LexicalAnalyzer {
             Pattern pattern = Pattern.compile(tokenPatterns[i]);
             Matcher matcher = pattern.matcher(lex);
 
-            if (matcher.find()) {
+            boolean hasMatch = matcher.find();
+            if (hasMatch) {
                 token = tokens[i];
                 System.out.println(line + token);
                 return token;
