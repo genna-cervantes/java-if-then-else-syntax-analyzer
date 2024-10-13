@@ -87,7 +87,37 @@ public class SyntaxAnalyzer {
 
     // <else-if>          ::= "else if" "(" <condition> ")"  <block> [<else-if>] |  "else" <block>
     public boolean parseElseIf() throws Exception {
-        
+        String error;
+
+        if (lexTokens.isEmpty() || !lexTokens.get(0).equals("ELSE_IF_KEYWORD")) {
+            error = "Illegal start of if else then expression at line: " + findLine();
+
+            throw new Exception(error);
+        }
+        lexTokens.remove(0);
+        lexCounter++;
+
+        if (lexTokens.isEmpty() || !lexTokens.get(0).equals("OPEN_PAREN")) {
+            error = "Missing Open Parenthesis at line: " + findLine();
+
+            throw new Exception(error);
+        }
+        lexTokens.remove(0);
+        lexCounter++;
+
+        if (!parseCondition()) {
+            error = "Illegal Condition at line: " + findLine();
+
+            throw new Exception(error);
+        }
+
+        if (lexTokens.isEmpty() || !lexTokens.get(0).equals("CLOSE_PAREN")) {
+            error = "Wrong Close Paren at line: " + findLine();
+
+            throw new Exception(error);
+        }
+        lexTokens.remove(0);
+        lexCounter++;
         
         return true;
     }
@@ -142,6 +172,8 @@ public class SyntaxAnalyzer {
         }
 
         if (parseStatement()) {
+
+            printTokens();
         
             if (!lexTokens.get(0).equals("SEMICOLON")) {
                 lexCounter--;
@@ -163,6 +195,7 @@ public class SyntaxAnalyzer {
 
         printTokens();
         if (parseCondition()) {
+            System.out.println("passed conditon");
             return true;
         }
 
@@ -234,9 +267,13 @@ public class SyntaxAnalyzer {
                     return true;
                 } else {
                     // return false;
-                    error = "illegal condition at line: " + findLine();
+                    error = "illegal expression at line: " + findLine();
                     throw new Exception(error);
                 }
+            }else if (lexTokens.get(0).equals("SHORTHAND_ARITHMETIC_OP")){ // try <expression> <shorthand-arithmetic-operator>
+                lexTokens.remove(0);
+                lexCounter++;
+                return true;
             }
 
             return true;

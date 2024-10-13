@@ -11,6 +11,7 @@ public class LexicalAnalyzer {
     private String DECLARATION_KEYWORDS = "\\b(int|boolean|char)\\b";
     private String BOOLEAN_LIT = "\\b(true|false)\\b";
     private String COMPARISON_OP = ">=|<=|==|!=|>|<";
+    private String SHORTHAND_ARITHMETIC_OP = "(\\+\\+|--)";
     private String ARITHMETIC_OP = "[+\\-*/]";
     private String ASSIGNMENT_OP = "=";
     private String SHORTCIRCUIT_OP = "\\|\\||&&";
@@ -30,6 +31,7 @@ public class LexicalAnalyzer {
         "DECLARATION_KEYWORDS",
         "BOOLEAN_LIT",
         "COMPARISON_OP",
+        "SHORTHAND_ARITHMETIC_OP",
         "ARITHMETIC_OP",
         "ASSIGNMENT_OP",
         "SHORTCIRCUIT_OP",
@@ -49,6 +51,7 @@ public class LexicalAnalyzer {
         DECLARATION_KEYWORDS,
         BOOLEAN_LIT,
         COMPARISON_OP,
+        SHORTHAND_ARITHMETIC_OP,
         ARITHMETIC_OP,
         ASSIGNMENT_OP,
         SHORTCIRCUIT_OP,
