@@ -34,7 +34,6 @@ public class SyntaxAnalyzer {
 
         // System.out.println("START PARSE");
         // System.out.println();
-
         String error;
 
         if (lexTokens.isEmpty() || !lexTokens.get(0).equals("IF_KEYWORD")) {
@@ -54,12 +53,13 @@ public class SyntaxAnalyzer {
         lexCounter++;
 
         if (!parseBooleanExpression()) {
-            error = "Illegal Condition at line: " + findLine();
+            error = "Illegal Boolean Expression at line: " + findLine();
 
             throw new Exception(error);
         }
 
         if (lexTokens.isEmpty() || !lexTokens.get(0).equals("CLOSE_PAREN")) {
+            printTokens();
             error = "Wrong Close Paren at line: " + findLine();
 
             throw new Exception(error);
@@ -295,29 +295,96 @@ public class SyntaxAnalyzer {
         lexTokens.remove(0);
         lexCounter++;
 
-        if (lexTokens.get(0).equals("ASSIGNMENT_OP")){
+        if (lexTokens.get(0).equals("ASSIGNMENT_OP")) {
             lexTokens.remove(0);
             lexCounter++;
 
             // arithmetic expression | condition idk yet
-            if (!parseCondition()){
+            if (!parseCondition()) {
                 error = "Illegal Declaration: " + findLine();
 
                 throw new Exception(error);
             }
         }
 
-        if (!lexTokens.get(0).equals("SEMICOLON")){
+        if (!lexTokens.get(0).equals("SEMICOLON")) {
             error = "Illegal Declaration: " + findLine();
 
-            throw new Exception(error);   
+            throw new Exception(error);
         }
 
         return true;
     }
 
     public boolean parseArithmeticExpression() throws Exception {
-        return true;
+        String error;
+
+        if (lexTokens.isEmpty()) {
+            error = "condition cannot be empty at line: " + findLine();
+            throw new Exception(error);
+        }
+
+        // try ( condition )
+        if (lexTokens.get(0).equals("OPEN_PAREN")) {
+            lexTokens.remove(0);
+            lexCounter++;
+
+            if (parseArithmeticExpression()) { // 1 // 2
+
+                // possible mag out of bounds
+                if (lexTokens.get(0).equals("CLOSE_PAREN")) {
+                    lexTokens.remove(0);
+                    lexCounter++;
+                    return true;
+                }
+
+            }
+        }
+
+        // ((x+y) == 7)
+        if (parseTerm()) {
+
+            if (lexTokens.get(0).equals("ARITHMETIC_OP")) {
+                lexTokens.remove(0);
+                lexCounter++;
+
+                if (parseArithmeticExpression()) {
+                    return true;
+                } else {
+                    // return false;
+                    error = "illegal arithmetic expression at line: " + findLine();
+                    throw new Exception(error);
+                }
+            } else if (lexTokens.get(0).equals("SHORTHAND_ARITHMETIC_OP")) { // try <expression> <shorthand-arithmetic-operator>
+                lexTokens.remove(0);
+                lexCounter++;
+
+                if (!lexTokens.get(0).equals("SEMICOLON")) {
+                    error = "Illegal Arithmetic: " + findLine();
+
+                    throw new Exception(error);
+                }
+
+                return true;
+            }
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean parseTerm() throws Exception {
+
+        if (parseExpression()) {
+
+            // printTokens();
+            return true;
+        }
+
+        // if (parseArithmeticExpression()){
+        //     return true;
+        // }
+        return false;
     }
 
     // <boolean_expression> :: = <expression> | “(“ <boolean_expression> “)” |  <boolean_expression> <comparison-operator> <boolean_expression>
@@ -331,43 +398,138 @@ public class SyntaxAnalyzer {
         }
 
         // try ( condition )
-        if (lexTokens.get(0).equals("OPEN_PAREN")) {
-            lexTokens.remove(0);
-            lexCounter++;
+        // if (lexTokens.get(0).equals("OPEN_PAREN")) {
+        //     lexTokens.remove(0);
+        //     lexCounter++;
 
-            if (parseBooleanExpression()) { // 1 // 2
+        //     // if (parseBooleanExpression()) { // 1 // 2
+        //     //     // possible mag out of bounds
+        //     //     if (lexTokens.get(0).equals("CLOSE_PAREN")) {
+        //     //         lexTokens.remove(0);
+        //     //         lexCounter++;
+        //     //         if (!lexTokens.get(0).equals("OPEN_BRACKET")){
+        //     //             parseBooleanExpression();
+        //     //         }
+        //     //         return true;
+        //     //     }
+        //     // }
+        //     System.out.println("remove open paren");
+        // }
 
-                // possible mag out of bounds
-                if (lexTokens.get(0).equals("CLOSE_PAREN")) {
-                    lexTokens.remove(0);
-                    lexCounter++;
-                    return true;
-                }
-
-            }
-        }
-
-        // try <condition> <operator> <condition>
-        if (parseExpression()) {
+        // (x+y) == z
+        if (parseAnyExpression()) {
+            // return true;
 
             if (lexTokens.get(0).equals("COMPARISON_OP")) {
                 lexTokens.remove(0);
                 lexCounter++;
-
-                if (parseBooleanExpression()) {
-                    return true;
-                } else {
-                    // return false;
+    
+                if (!parseAnyExpression()) {
                     error = "illegal boolean expression at line: " + findLine();
-                    throw new Exception(error);
+                    throw new Exception(error);   
                 }
-            }else if (!lexTokens.get(0).equals("CLOSE_PAREN")) {
+
+            }else{
                 error = "illegal boolean expression at line: " + findLine();
                 throw new Exception(error);
             }
+        }
+        
+
+        if (lexTokens.get(0).equals("CLOSE_PAREN")) {
+
+            if (!lexTokens.get(1).equals("OPEN_BRACKET")) {
+                lexTokens.remove(0);
+                lexCounter++;
+
+                parseBooleanExpression();
+            }
+
             return true;
         }
 
+        // try <condition> <operator> <condition>
+        // if (parseExpression()) {
+        //     if (lexTokens.get(0).equals("COMPARISON_OP")) {
+        //         lexTokens.remove(0);
+        //         lexCounter++;
+        //         if (parseBooleanExpression()) {
+        //             return true;
+        //         } else {
+        //             // return false;
+        //             error = "illegal boolean expression at line: " + findLine();
+        //             throw new Exception(error);
+        //         }
+        //     }else if (lexTokens.get(0).equals("ARITHMETIC_OP")){
+        //         lexTokens.remove(0);
+        //         lexCounter++;
+        //         if (parseArithmeticExpression()) {
+        //             return true;
+        //         } else {
+        //             // return false;
+        //             error = "illegal boolean expression at line: " + findLine();
+        //             throw new Exception(error);
+        //         }
+        //     }else if (!lexTokens.get(0).equals("CLOSE_PAREN")) {
+        //         error = "illegal boolean expression at line: " + findLine();
+        //         throw new Exception(error);
+        //     }
+        //     return true;
+        // }
+        // if (parseExpression()){
+        //     return true;
+        // }
+        return false;
+    }
+
+    public boolean parseAnyExpression() throws Exception {
+
+        if (lexTokens.get(0).equals("OPEN_PAREN")) {
+         
+            if (lexTokens.get(1).equals("IDENT") || lexTokens.get(1).equals("INTEGER_LIT")) {
+
+                if (lexTokens.get(2).equals("ARITHMETIC_OP")) {
+                    if (parseArithmeticExpression()) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+    
+                lexTokens.remove(0);
+                lexCounter++;
+                return true;
+            }
+
+            return false;
+        }
+
+        if (lexTokens.get(0).equals("IDENT") || lexTokens.get(0).equals("INTEGER_LIT")) {
+
+            if (lexTokens.get(1).equals("ARITHMETIC_OP")) {
+                if (parseArithmeticExpression()) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+            lexTokens.remove(0);
+            lexCounter++;
+            return true;
+        }
+
+        printTokens();
+
+        
+
+        // dito nag lloop
+        // if (parseArithmeticExpression()){
+        //     return true;
+        // }
+        // if (parseExpression()){
+        //     return true;
+        // }
         return false;
     }
 
@@ -415,10 +577,10 @@ public class SyntaxAnalyzer {
                 lexTokens.remove(0);
                 lexCounter++;
 
-                if (!lexTokens.get(0).equals("SEMICOLON")){
+                if (!lexTokens.get(0).equals("SEMICOLON")) {
                     error = "Illegal Arithmetic: " + findLine();
-        
-                    throw new Exception(error);   
+
+                    throw new Exception(error);
                 }
 
                 return true;
