@@ -59,7 +59,6 @@ public class SyntaxAnalyzer {
         }
 
         if (lexTokens.isEmpty() || !lexTokens.get(0).equals("CLOSE_PAREN")) {
-            printTokens();
             error = "Wrong Close Paren at line: " + findLine();
 
             throw new Exception(error);
@@ -261,9 +260,13 @@ public class SyntaxAnalyzer {
     // <statement>    ::=  " " | <condition> | <declaration> -- di keri ung " "
     public boolean parseStatement() throws Exception {
         String error;
+        
+        if (parseAssignment()){
+            return true;
+        }
 
         // arithmetic expression nlng
-        if (parseCondition()) {
+        if (parseArithmeticExpression()) {
             return true;
         }
 
@@ -273,6 +276,29 @@ public class SyntaxAnalyzer {
 
         error = "Illegal Block Statement: " + findLine();
         throw new Exception(error);
+    }
+
+    // <assignment_expression> ::= <identifier> <assignment-operator> <expression>
+    public boolean parseAssignment() throws Exception{
+        if (!lexTokens.get(0).equals("IDENT")){
+            return false;
+        }
+
+        if (!lexTokens.get(1).equals("ASSIGNMENT_OP")){
+            return false;
+        }
+
+        lexTokens.remove(0);
+        lexCounter++;
+        
+        lexTokens.remove(0);
+        lexCounter++;
+
+        if (!parseAnyExpression()){
+            return false;
+        }
+
+        return true;
     }
 
     // <declaration>  ::= <keyword> <identifier> ";"
@@ -356,6 +382,7 @@ public class SyntaxAnalyzer {
                     throw new Exception(error);
                 }
             } else if (lexTokens.get(0).equals("SHORTHAND_ARITHMETIC_OP")) { // try <expression> <shorthand-arithmetic-operator>
+
                 lexTokens.remove(0);
                 lexCounter++;
 
@@ -376,8 +403,6 @@ public class SyntaxAnalyzer {
     public boolean parseTerm() throws Exception {
 
         if (parseExpression()) {
-
-            // printTokens();
             return true;
         }
 
@@ -428,6 +453,9 @@ public class SyntaxAnalyzer {
                     error = "illegal boolean expression at line: " + findLine();
                     throw new Exception(error);   
                 }
+
+            }else if (lexTokens.get(0).equals("CLOSE_PAREN")) { // for single boolean expressions
+                return true;
 
             }else{
                 error = "illegal boolean expression at line: " + findLine();
@@ -519,17 +547,6 @@ public class SyntaxAnalyzer {
             return true;
         }
 
-        printTokens();
-
-        
-
-        // dito nag lloop
-        // if (parseArithmeticExpression()){
-        //     return true;
-        // }
-        // if (parseExpression()){
-        //     return true;
-        // }
         return false;
     }
 
