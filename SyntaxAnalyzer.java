@@ -32,7 +32,9 @@ public class SyntaxAnalyzer {
     // "if" "(" <condition> ")" <block> [<else-if>]
     public boolean parseIfThenElse() throws Exception {
 
-        System.out.println("parsing if then else");
+        System.out.println("START PARSE");
+        System.out.println();
+
         String error;
 
         if (lexTokens.isEmpty() || !lexTokens.get(0).equals("IF_KEYWORD")) {
@@ -56,8 +58,6 @@ public class SyntaxAnalyzer {
 
             throw new Exception(error);
         }
-        System.out.println("passed condition");
-        printTokens();
 
         if (lexTokens.isEmpty() || !lexTokens.get(0).equals("CLOSE_PAREN")) {
             error = "Wrong Close Paren at line: " + findLine();
@@ -73,8 +73,25 @@ public class SyntaxAnalyzer {
             throw new Exception(error);
         }
 
+        // optional else if
+        if (lexTokens.isEmpty()){
+            return true;
+        }
+
+        if (!parseElseIf()){
+
+        }
+
         return true;
     }
+
+    // <else-if>          ::= "else if" "(" <condition> ")"  <block> [<else-if>] |  "else" <block>
+    public boolean parseElseIf() throws Exception {
+        
+        
+        return true;
+    }
+
 
     // <block>        ::=  "{" <statement> "}"
     public boolean parseBlock() throws Exception {
@@ -120,24 +137,21 @@ public class SyntaxAnalyzer {
             throw new Exception(error);
         }
 
-        if (lexTokens.get(0).equals("CLOSE_BRACKET")){
+        if (lexTokens.get(0).equals("CLOSE_BRACKET")) {
             return true;
         }
 
-        // x;
-        // y
-
-        if (parseStatement()){
-            // if ; check pa ng statement -- so ndi tatanggalin sa statement ung ;
-            
-            if (lexTokens.get(0).equals("SEMICOLON")){
-                lexTokens.remove(0);
-                System.out.println("parsing next statement");
-                parseStatements();
-            }else{
+        if (parseStatement()) {
+        
+            if (!lexTokens.get(0).equals("SEMICOLON")) {
+                lexCounter--;
                 error = "missing semicolon: " + findLine();
                 throw new Exception(error);
             }
+
+            lexTokens.remove(0);
+            lexCounter++;
+            parseStatements();
         }
 
         return true;
@@ -151,7 +165,6 @@ public class SyntaxAnalyzer {
         if (parseCondition()) {
             return true;
         }
-        System.out.println("failed condition in statement");
 
         if (parseDeclaration()) {
             return true;
@@ -211,14 +224,11 @@ public class SyntaxAnalyzer {
         }
 
         // try <condition> <operator> <condition>
-        // <operator>     ::=  <comparison-operator> | <arithmetic-operator> | <assignment-operator>
         if (parseExpression()) {
 
             if (parseOperator()) {
                 lexTokens.remove(0);
                 lexCounter++;
-                // System.out.println("passed operator");
-                // printTokens();
 
                 if (parseCondition()) {
                     return true;
@@ -280,13 +290,12 @@ public class SyntaxAnalyzer {
 
         // try identifier
         if (lexTokens.get(0).equals("IDENT")) {
-            System.out.println("returned true from here");
             lexTokens.remove(0);
+            lexCounter++;
             return true;
         }
 
         if (lexTokens.get(0).equals("INTEGER_LIT")) {
-            System.out.println("returned true from here 2");
             lexTokens.remove(0);
             lexCounter++;
             return true;
