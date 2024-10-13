@@ -293,6 +293,23 @@ public class SyntaxAnalyzer {
         lexTokens.remove(0);
         lexCounter++;
 
+        if (lexTokens.get(0).equals("ASSIGNMENT_OP")){
+            lexTokens.remove(0);
+            lexCounter++;
+
+            if (!parseCondition()){
+                error = "Illegal Declaration: " + findLine();
+
+                throw new Exception(error);
+            }
+        }
+
+        if (!lexTokens.get(0).equals("SEMICOLON")){
+            error = "Illegal Declaration: " + findLine();
+
+            throw new Exception(error);   
+        }
+
         return true;
     }
 
@@ -339,6 +356,13 @@ public class SyntaxAnalyzer {
             } else if (lexTokens.get(0).equals("SHORTHAND_ARITHMETIC_OP")) { // try <expression> <shorthand-arithmetic-operator>
                 lexTokens.remove(0);
                 lexCounter++;
+
+                if (!lexTokens.get(0).equals("SEMICOLON")){
+                    error = "Illegal Arithmetic: " + findLine();
+        
+                    throw new Exception(error);   
+                }
+
                 return true;
             }
 
