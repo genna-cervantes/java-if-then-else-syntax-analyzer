@@ -32,13 +32,13 @@ public class SyntaxAnalyzer {
     // "if" "(" <condition> ")" <block> [<else-if>]
     public boolean parseIfThenElse() throws Exception {
 
-        System.out.println("START PARSE");
-        System.out.println();
+        // System.out.println("START PARSE");
+        // System.out.println();
 
         String error;
 
         if (lexTokens.isEmpty() || !lexTokens.get(0).equals("IF_KEYWORD")) {
-            error = "Illegal start of if else then expression at line: " + findLine();
+            error = "Illegal start of if expression at line: " + findLine();
 
             throw new Exception(error);
         }
@@ -74,14 +74,43 @@ public class SyntaxAnalyzer {
         }
 
         // optional else if
-        if (lexTokens.isEmpty()){
+        if (lexTokens.isEmpty()) {
+            System.out.println("No Syntax Errors, Congratulations!");
             return true;
         }
 
-        if (!parseElseIf()){
+        if (lexTokens.get(0).equals("ELSE_IF_KEYWORD")) {
 
+            if (!parseElseIf()) {
+                error = "Illegal Else If: " + findLine();
+
+                throw new Exception(error);
+            }
         }
 
+        // optional else after else if
+        if (lexTokens.isEmpty()) {
+            System.out.println("No Syntax Errors, Congratulations!");
+            return true;
+        }
+
+        if (lexTokens.get(0).equals("ELSE_KEYWORD")) {
+
+            if (!parseElse()) {
+                error = "Illegal Else: " + findLine();
+
+                throw new Exception(error);
+            }
+        }
+
+        // should be the end
+        if (!lexTokens.isEmpty()) {
+            error = "Illegal End of If Else Then: " + findLine();
+
+            throw new Exception(error);
+        }
+
+        System.out.println("No Syntax Errors, Congratulations!");
         return true;
     }
 
@@ -90,7 +119,7 @@ public class SyntaxAnalyzer {
         String error;
 
         if (lexTokens.isEmpty() || !lexTokens.get(0).equals("ELSE_IF_KEYWORD")) {
-            error = "Illegal start of if else then expression at line: " + findLine();
+            error = "Illegal start of else if expression at line: " + findLine();
 
             throw new Exception(error);
         }
@@ -118,10 +147,51 @@ public class SyntaxAnalyzer {
         }
         lexTokens.remove(0);
         lexCounter++;
-        
+
+        if (!parseBlock()) {
+            error = "Illegal Block: " + findLine();
+
+            throw new Exception(error);
+        }
+
+        // optional else if
+        if (lexTokens.isEmpty()) {
+            return true;
+        }
+
+        if (lexTokens.get(0).equals("ELSE_KEYWORD")) {
+            return true;
+        }
+
+        // meron pang else if
+        if (!parseElseIf()) {
+            error = "Illegal Else If: " + findLine();
+
+            throw new Exception(error);
+        }
+
         return true;
     }
 
+    public boolean parseElse() throws Exception {
+        String error;
+
+        if (lexTokens.isEmpty() || !lexTokens.get(0).equals("ELSE_KEYWORD")) {
+            error = "Illegal start of else at line: " + findLine();
+
+            throw new Exception(error);
+        }
+        lexTokens.remove(0);
+        lexCounter++;
+
+        if (!parseBlock()) {
+            error = "Illegal Block: " + findLine();
+
+            throw new Exception(error);
+        }
+
+        return true;
+    }
 
     // <block>        ::=  "{" <statement> "}"
     public boolean parseBlock() throws Exception {
@@ -173,8 +243,6 @@ public class SyntaxAnalyzer {
 
         if (parseStatement()) {
 
-            printTokens();
-        
             if (!lexTokens.get(0).equals("SEMICOLON")) {
                 lexCounter--;
                 error = "missing semicolon: " + findLine();
@@ -193,9 +261,7 @@ public class SyntaxAnalyzer {
     public boolean parseStatement() throws Exception {
         String error;
 
-        printTokens();
         if (parseCondition()) {
-            System.out.println("passed conditon");
             return true;
         }
 
@@ -267,10 +333,10 @@ public class SyntaxAnalyzer {
                     return true;
                 } else {
                     // return false;
-                    error = "illegal expression at line: " + findLine();
+                    error = "illegal arithmetic expression at line: " + findLine();
                     throw new Exception(error);
                 }
-            }else if (lexTokens.get(0).equals("SHORTHAND_ARITHMETIC_OP")){ // try <expression> <shorthand-arithmetic-operator>
+            } else if (lexTokens.get(0).equals("SHORTHAND_ARITHMETIC_OP")) { // try <expression> <shorthand-arithmetic-operator>
                 lexTokens.remove(0);
                 lexCounter++;
                 return true;

@@ -71,19 +71,18 @@ public class Main {
             }
         }
 
-        for (Token t : tokens) {
-            System.out.println(t.token + t.line);
-        }
+        // for (Token t : tokens) {
+        //     System.out.println(t.token + t.line);
+        // }
 
         SyntaxAnalyzer sa = new SyntaxAnalyzer(tokens);
         try {
             sa.parseIfThenElse();
         } catch (Exception e) {
-            System.out.println(e);
+            System.out.println(e.getMessage());
         }
 
         // each syntax error thwors an error
         // handle nlgn try catch dito
-
     }
 }
