@@ -53,7 +53,7 @@ public class SyntaxAnalyzer {
         lexTokens.remove(0);
         lexCounter++;
 
-        if (!parseCondition()) {
+        if (!parseBooleanExpression()) {
             error = "Illegal Condition at line: " + findLine();
 
             throw new Exception(error);
@@ -134,7 +134,7 @@ public class SyntaxAnalyzer {
         lexTokens.remove(0);
         lexCounter++;
 
-        if (!parseCondition()) {
+        if (!parseBooleanExpression()) {
             error = "Illegal Condition at line: " + findLine();
 
             throw new Exception(error);
@@ -262,6 +262,7 @@ public class SyntaxAnalyzer {
     public boolean parseStatement() throws Exception {
         String error;
 
+        // arithmetic expression nlng
         if (parseCondition()) {
             return true;
         }
@@ -298,6 +299,7 @@ public class SyntaxAnalyzer {
             lexTokens.remove(0);
             lexCounter++;
 
+            // arithmetic expression | condition idk yet
             if (!parseCondition()){
                 error = "Illegal Declaration: " + findLine();
 
@@ -312,6 +314,61 @@ public class SyntaxAnalyzer {
         }
 
         return true;
+    }
+
+    public boolean parseArithmeticExpression() throws Exception {
+        return true;
+    }
+
+    // <boolean_expression> :: = <expression> | “(“ <boolean_expression> “)” |  <boolean_expression> <comparison-operator> <boolean_expression>
+    public boolean parseBooleanExpression() throws Exception {
+
+        String error;
+
+        if (lexTokens.isEmpty()) {
+            error = "condition cannot be empty at line: " + findLine();
+            throw new Exception(error);
+        }
+
+        // try ( condition )
+        if (lexTokens.get(0).equals("OPEN_PAREN")) {
+            lexTokens.remove(0);
+            lexCounter++;
+
+            if (parseBooleanExpression()) { // 1 // 2
+
+                // possible mag out of bounds
+                if (lexTokens.get(0).equals("CLOSE_PAREN")) {
+                    lexTokens.remove(0);
+                    lexCounter++;
+                    return true;
+                }
+
+            }
+        }
+
+        // try <condition> <operator> <condition>
+        if (parseExpression()) {
+
+            if (lexTokens.get(0).equals("COMPARISON_OP")) {
+                lexTokens.remove(0);
+                lexCounter++;
+
+                if (parseBooleanExpression()) {
+                    return true;
+                } else {
+                    // return false;
+                    error = "illegal boolean expression at line: " + findLine();
+                    throw new Exception(error);
+                }
+            }else if (!lexTokens.get(0).equals("CLOSE_PAREN")) {
+                error = "illegal boolean expression at line: " + findLine();
+                throw new Exception(error);
+            }
+            return true;
+        }
+
+        return false;
     }
 
     // <condition> ::= <expression> | “(“ <condition> “)” | <condition> <operator> <condition>
