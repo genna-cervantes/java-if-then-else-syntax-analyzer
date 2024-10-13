@@ -173,6 +173,7 @@ public class SyntaxAnalyzer {
         return true;
     }
 
+    //  "else" <block>
     public boolean parseElse() throws Exception {
         String error;
 

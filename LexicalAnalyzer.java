@@ -65,24 +65,6 @@ public class LexicalAnalyzer {
         SEMICOLON
     };
 
-    public String getToken(String lex, int line) {
-        String token = "UNDEFINED";
-
-        for (int i = 0; i < tokenPatterns.length; i++) {
-            Pattern pattern = Pattern.compile(tokenPatterns[i]);
-            Matcher matcher = pattern.matcher(lex);
-
-            boolean hasMatch = matcher.find();
-            if (hasMatch) {
-                token = tokens[i];
-                System.out.println(line + token);
-                return token;
-            }
-        }
-
-        return token;
-    }
-
     public ArrayList<String> tokenizeString(String input){
         
         ArrayList<String> recognizedTokens = new ArrayList<>();
