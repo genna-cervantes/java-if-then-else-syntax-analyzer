@@ -28,7 +28,6 @@ public class SyntaxAnalyzer {
     public int findLine() {
         return tokens.get(lexCounter).line + 1;
     }
-    
 
     // "if" "(" <condition> ")" <block> [<else-if>]
     public boolean parseIfThenElse() throws Exception {
@@ -38,32 +37,22 @@ public class SyntaxAnalyzer {
 
         if (lexTokens.isEmpty() || !lexTokens.get(0).equals("IF_KEYWORD")) {
             error = "Illegal start of if else then expression at line: " + findLine();
-            // System.out.println(error);
-            // return false;
 
             throw new Exception(error);
         }
         lexTokens.remove(0);
         lexCounter++;
-        // System.out.println("passed if");
-        // printTokens();
 
         if (lexTokens.isEmpty() || !lexTokens.get(0).equals("OPEN_PAREN")) {
             error = "Missing Open Parenthesis at line: " + findLine();
-            // System.out.println(error);
-            // return false;
 
             throw new Exception(error);
         }
         lexTokens.remove(0);
         lexCounter++;
-        // System.out.println("passed open paren");
-        // printTokens();
 
         if (!parseCondition()) {
             error = "Illegal Condition at line: " + findLine();
-            // System.out.println(error);
-            // return false;
 
             throw new Exception(error);
         }
@@ -72,67 +61,85 @@ public class SyntaxAnalyzer {
 
         if (lexTokens.isEmpty() || !lexTokens.get(0).equals("CLOSE_PAREN")) {
             error = "Wrong Close Paren at line: " + findLine();
-            // System.out.println(error);
-            // return false;
 
             throw new Exception(error);
         }
         lexTokens.remove(0);
         lexCounter++;
-        // System.out.println("passed closed paren");
-        // printTokens();
 
-        if (!parseBlock()){
+        if (!parseBlock()) {
             error = "Illegal Block: " + findLine();
-            // System.out.println(error);
-            // return false;
 
-            throw new Exception(error);   
+            throw new Exception(error);
         }
 
         return true;
     }
 
     // <block>        ::=  "{" <statement> "}"
-    public boolean parseBlock() throws Exception{
+    public boolean parseBlock() throws Exception {
         String error;
 
         if (lexTokens.isEmpty()) {
-            // return false;
             error = "missing block at line: " + findLine();
             throw new Exception(error);
         }
 
-        if (!lexTokens.get(0).equals("OPEN_BRACKET")){
+        if (!lexTokens.get(0).equals("OPEN_BRACKET")) {
             error = "Missing Open Bracket at line: " + findLine();
-            // System.out.println(error);
-            // return false;
 
             throw new Exception(error);
         }
         lexTokens.remove(0);
         lexCounter++;
 
-        if (!parseStatement()){
+        if (!parseStatements()) {
             error = "Illegal Statement: " + findLine();
-            // System.out.println(error);
-            // return false;
 
             throw new Exception(error);
         }
         // else kung whitespace check kung close bracket na valid pa rin nmn tapos return true na ung start ng if else na mag hhandle pag madoble ung close bracket?
 
-
-        if (!lexTokens.get(0).equals("CLOSE_BRACKET")){
+        if (!lexTokens.get(0).equals("CLOSE_BRACKET")) {
             error = "Missing Close Bracket at line: " + findLine();
-            // System.out.println(error);
-            // return false;
 
             throw new Exception(error);
         }
         lexTokens.remove(0);
         lexCounter++;
-        
+
+        return true;
+    }
+
+    // <statements>    ::=  <statement> [ { <statement> } ] 
+    public boolean parseStatements() throws Exception {
+        String error;
+
+        if (lexTokens.isEmpty()) {
+            error = "missing block at line: " + findLine();
+            throw new Exception(error);
+        }
+
+        if (lexTokens.get(0).equals("CLOSE_BRACKET")){
+            return true;
+        }
+
+        // x;
+        // y
+
+        if (parseStatement()){
+            // if ; check pa ng statement -- so ndi tatanggalin sa statement ung ;
+            
+            if (lexTokens.get(0).equals("SEMICOLON")){
+                lexTokens.remove(0);
+                System.out.println("parsing next statement");
+                parseStatements();
+            }else{
+                error = "missing semicolon: " + findLine();
+                throw new Exception(error);
+            }
+        }
+
         return true;
     }
 
@@ -140,73 +147,48 @@ public class SyntaxAnalyzer {
     public boolean parseStatement() throws Exception {
         String error;
 
-        if (parseCondition()){
-            // error = "Illegal Block Scope Condition: " + findLine();
-            // // System.out.println(error);
-            // // return false;
+        printTokens();
+        if (parseCondition()) {
+            return true;
+        }
+        System.out.println("failed condition in statement");
 
-            // throw new Exception(error);
+        if (parseDeclaration()) {
             return true;
         }
 
-        if (parseDeclaration()){
-            // error = "Illegal Block Scope Declaration: " + findLine();
-            // // System.out.println(error);
-            // // return false;
-
-            // throw new Exception(error);
-            return true;
-        }
-        
         error = "Illegal Block Statement: " + findLine();
         throw new Exception(error);
     }
 
     // <declaration>  ::= <keyword> <identifier> ";"
-    public boolean parseDeclaration() throws Exception{
+    public boolean parseDeclaration() throws Exception {
         String error;
 
-        if (!lexTokens.get(0).equals("DECLARATION_KEYWORDS")){
+        if (!lexTokens.get(0).equals("DECLARATION_KEYWORDS")) {
             error = "Illegal Start of Declaration: " + findLine();
-            // System.out.println(error);
-            // return false;
 
             throw new Exception(error);
         }
         lexTokens.remove(0);
         lexCounter++;
 
-        if (!lexTokens.get(0).equals("IDENT")){
+        if (!lexTokens.get(0).equals("IDENT")) {
             error = "Illegal Declaration: " + findLine();
-            // System.out.println(error);
-            // return false;
 
             throw new Exception(error);
         }
         lexTokens.remove(0);
         lexCounter++;
 
-        if (!lexTokens.get(0).equals("SEMICOLON")){
-            error = "Missing Semicolon: " + findLine();
-            // System.out.println(error);
-            // return false;
-
-            throw new Exception(error);
-        }
-        lexTokens.remove(0);
-        lexCounter++;
-
-        
         return true;
     }
-
 
     // <condition> ::= <expression> | “(“ <condition> “)” | <condition> <operator> <condition>
     public boolean parseCondition() throws Exception {
         String error;
 
         if (lexTokens.isEmpty()) {
-            // return false;
             error = "condition cannot be empty at line: " + findLine();
             throw new Exception(error);
         }
@@ -215,8 +197,6 @@ public class SyntaxAnalyzer {
         if (lexTokens.get(0).equals("OPEN_PAREN")) {
             lexTokens.remove(0);
             lexCounter++;
-            // System.out.println("passed open paren");
-            // printTokens();
 
             if (parseCondition()) { // 1 // 2
 
@@ -242,28 +222,24 @@ public class SyntaxAnalyzer {
 
                 if (parseCondition()) {
                     return true;
-                }else{
+                } else {
                     // return false;
                     error = "illegal condition at line: " + findLine();
                     throw new Exception(error);
                 }
             }
 
-            // System.out.println("passed simple expression");
-            // printTokens();
             return true;
         }
 
-        // error = "Illegal Condition at line: " + findLine();
         return false;
-        // throw new Exception(error);
     }
 
     // <operator>     ::=  <comparison-operator> | <arithmetic-operator> | <assignment-operator>
     public boolean parseOperator() throws Exception {
         String error;
 
-        if (lexTokens.isEmpty()){
+        if (lexTokens.isEmpty()) {
             // return false;
             error = "condition cannot be empty at line: " + findLine();
             throw new Exception(error);
@@ -280,7 +256,7 @@ public class SyntaxAnalyzer {
         if (lexTokens.get(0).equals("ASSIGNMENT_OP")) {
             return true;
         }
-        
+
         if (lexTokens.get(0).equals("SHORTCIRCUIT_OP")) {
             return true;
         }
@@ -296,7 +272,7 @@ public class SyntaxAnalyzer {
     public boolean parseExpression() throws Exception {
         String error;
 
-        if (lexTokens.isEmpty()){
+        if (lexTokens.isEmpty()) {
             // return false;
             error = "expression cannot be empty at line: " + findLine();
             throw new Exception(error);
@@ -316,11 +292,7 @@ public class SyntaxAnalyzer {
             return true;
         }
 
-        // System.out.println("returned false");
-        // error = "Not an expression";
         return false;
-        // error = "illegal expression at line: " + findLine();
-        // throw new Exception(error);
     }
 
 }
