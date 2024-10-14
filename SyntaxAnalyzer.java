@@ -374,7 +374,7 @@ public class SyntaxAnalyzer {
                 lexTokens.remove(0);
                 lexCounter++;
 
-                if (parseArithmeticExpression()) {
+                if (parseTerm()) {
                     return true;
                 } else {
                     // return false;
@@ -393,8 +393,8 @@ public class SyntaxAnalyzer {
                 }
 
                 return true;
-            }
-            return true;
+            } 
+            return false;
         }
 
         return false;
