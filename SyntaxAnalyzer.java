@@ -104,7 +104,7 @@ public class SyntaxAnalyzer {
 
         // should be the end
         if (!lexTokens.isEmpty()) {
-            error = "Illegal End of If Else Then: " + findLine();
+            error = "Illegal Else If Condition: " + findLine();
 
             throw new Exception(error);
         }
