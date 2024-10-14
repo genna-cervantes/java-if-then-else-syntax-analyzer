@@ -326,7 +326,7 @@ public class SyntaxAnalyzer {
             lexCounter++;
 
             // arithmetic expression | condition idk yet
-            if (!parseCondition()) {
+            if (!parseArithmeticExpression()) {
                 error = "Illegal Declaration: " + findLine();
 
                 throw new Exception(error);
@@ -422,28 +422,7 @@ public class SyntaxAnalyzer {
             throw new Exception(error);
         }
 
-        // try ( condition )
-        // if (lexTokens.get(0).equals("OPEN_PAREN")) {
-        //     lexTokens.remove(0);
-        //     lexCounter++;
-
-        //     // if (parseBooleanExpression()) { // 1 // 2
-        //     //     // possible mag out of bounds
-        //     //     if (lexTokens.get(0).equals("CLOSE_PAREN")) {
-        //     //         lexTokens.remove(0);
-        //     //         lexCounter++;
-        //     //         if (!lexTokens.get(0).equals("OPEN_BRACKET")){
-        //     //             parseBooleanExpression();
-        //     //         }
-        //     //         return true;
-        //     //     }
-        //     // }
-        //     System.out.println("remove open paren");
-        // }
-
-        // (x+y) == z
         if (parseAnyExpression()) {
-            // return true;
 
             if (lexTokens.get(0).equals("COMPARISON_OP")) {
                 lexTokens.remove(0);
@@ -476,37 +455,7 @@ public class SyntaxAnalyzer {
             return true;
         }
 
-        // try <condition> <operator> <condition>
-        // if (parseExpression()) {
-        //     if (lexTokens.get(0).equals("COMPARISON_OP")) {
-        //         lexTokens.remove(0);
-        //         lexCounter++;
-        //         if (parseBooleanExpression()) {
-        //             return true;
-        //         } else {
-        //             // return false;
-        //             error = "illegal boolean expression at line: " + findLine();
-        //             throw new Exception(error);
-        //         }
-        //     }else if (lexTokens.get(0).equals("ARITHMETIC_OP")){
-        //         lexTokens.remove(0);
-        //         lexCounter++;
-        //         if (parseArithmeticExpression()) {
-        //             return true;
-        //         } else {
-        //             // return false;
-        //             error = "illegal boolean expression at line: " + findLine();
-        //             throw new Exception(error);
-        //         }
-        //     }else if (!lexTokens.get(0).equals("CLOSE_PAREN")) {
-        //         error = "illegal boolean expression at line: " + findLine();
-        //         throw new Exception(error);
-        //     }
-        //     return true;
-        // }
-        // if (parseExpression()){
-        //     return true;
-        // }
+
         return false;
     }
 
@@ -550,64 +499,6 @@ public class SyntaxAnalyzer {
         return false;
     }
 
-    // <condition> ::= <expression> | “(“ <condition> “)” | <condition> <operator> <condition>
-    public boolean parseCondition() throws Exception {
-        String error;
-
-        if (lexTokens.isEmpty()) {
-            error = "condition cannot be empty at line: " + findLine();
-            throw new Exception(error);
-        }
-
-        // try ( condition )
-        if (lexTokens.get(0).equals("OPEN_PAREN")) {
-            lexTokens.remove(0);
-            lexCounter++;
-
-            if (parseCondition()) { // 1 // 2
-
-                // possible mag out of bounds
-                if (lexTokens.get(0).equals("CLOSE_PAREN")) {
-                    lexTokens.remove(0);
-                    lexCounter++;
-                    return true;
-                }
-
-            }
-        }
-
-        // try <condition> <operator> <condition>
-        if (parseExpression()) {
-
-            if (parseOperator()) {
-                lexTokens.remove(0);
-                lexCounter++;
-
-                if (parseCondition()) {
-                    return true;
-                } else {
-                    // return false;
-                    error = "illegal arithmetic expression at line: " + findLine();
-                    throw new Exception(error);
-                }
-            } else if (lexTokens.get(0).equals("SHORTHAND_ARITHMETIC_OP")) { // try <expression> <shorthand-arithmetic-operator>
-                lexTokens.remove(0);
-                lexCounter++;
-
-                if (!lexTokens.get(0).equals("SEMICOLON")) {
-                    error = "Illegal Arithmetic: " + findLine();
-
-                    throw new Exception(error);
-                }
-
-                return true;
-            }
-
-            return true;
-        }
-
-        return false;
-    }
 
     // <operator>     ::=  <comparison-operator> | <arithmetic-operator> | <assignment-operator>
     public boolean parseOperator() throws Exception {
