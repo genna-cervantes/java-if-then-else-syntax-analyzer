@@ -1,16 +1,16 @@
 package com.proglang.fap.demo.models;
 
 public class Line {
-    private int line;
+    private int lineNumber;
     private String str;  
 
     public Line(int line, String str){
-        this.line = line;
+        this.lineNumber = line;
         this.str = str;
     }
 
-    public int getLine(){
-        return this.line;
+    public int getLineNumber(){
+        return this.lineNumber;
     }
 
     public String getString(){
