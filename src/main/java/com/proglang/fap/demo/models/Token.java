@@ -1,16 +1,11 @@
 package com.proglang.fap.demo.models;
 
-public class Token {
-    private int line;
+public class Token extends SyntaxElement {
     private String token;
 
-    public Token(int line, String token){
-        this.line = line;
+    public Token(int lineNumber, String token){
+        super(lineNumber);
         this.token = token;
-    }
-
-    public int getLine(){
-        return this.line;
     }
 
     public String getToken(){

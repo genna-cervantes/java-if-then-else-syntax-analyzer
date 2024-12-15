@@ -1,16 +1,11 @@
 package com.proglang.fap.demo.models;
 
-public class Line {
-    private int lineNumber;
+public class Line extends SyntaxElement{
     private String str;  
 
-    public Line(int line, String str){
-        this.lineNumber = line;
+    public Line(int lineNumber, String str){
+        super(lineNumber);
         this.str = str;
-    }
-
-    public int getLineNumber(){
-        return this.lineNumber;
     }
 
     public String getString(){

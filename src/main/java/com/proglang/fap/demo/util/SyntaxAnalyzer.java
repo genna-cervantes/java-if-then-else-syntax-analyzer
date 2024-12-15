@@ -2,6 +2,7 @@ package com.proglang.fap.demo.util;
 
 
 import java.util.ArrayList;
+import java.util.List;
 
 import com.proglang.fap.demo.exceptions.SyntaxException;
 import com.proglang.fap.demo.models.Token;
@@ -12,7 +13,7 @@ public class SyntaxAnalyzer {
     ArrayList<String> lexTokens;
     int lexCounter;
 
-    public SyntaxAnalyzer(ArrayList<Token> tokens) {
+    public SyntaxAnalyzer(List<Token> tokens) {
 
         ArrayList<String> lexTokensCopy = new ArrayList<>();
 
@@ -20,7 +21,7 @@ public class SyntaxAnalyzer {
             lexTokensCopy.add(t.getToken());
         }
 
-        this.tokens = tokens;
+        this.tokens = new ArrayList<>(tokens);
         this.lexTokens = lexTokensCopy;
     }
 
@@ -31,7 +32,7 @@ public class SyntaxAnalyzer {
     }
 
     public int findLine() {
-        return tokens.get(lexCounter).getLine() + 1;
+        return tokens.get(lexCounter).getLineNumber() + 1;
     }
 
     // "if" "(" <condition> ")" <block> [<else-if>]
