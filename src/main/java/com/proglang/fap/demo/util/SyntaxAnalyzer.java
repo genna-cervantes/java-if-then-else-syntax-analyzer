@@ -2,7 +2,7 @@ package com.proglang.fap.demo.util;
 
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Queue;
 
 import com.proglang.fap.demo.exceptions.SyntaxException;
 import com.proglang.fap.demo.models.Token;
@@ -13,7 +13,7 @@ public class SyntaxAnalyzer {
     ArrayList<String> lexTokens;
     int lexCounter;
 
-    public SyntaxAnalyzer(List<Token> tokens) {
+    public SyntaxAnalyzer(Queue<Token> tokens) {
 
         ArrayList<String> lexTokensCopy = new ArrayList<>();
 
@@ -32,7 +32,11 @@ public class SyntaxAnalyzer {
     }
 
     public int findLine() {
-        return tokens.get(lexCounter).getLineNumber() + 1;
+        if (lexCounter >= 0 && lexCounter < tokens.size()) {
+            return tokens.get(lexCounter).getLineNumber() + 1; // Safe access
+        } else {
+            return 0; // Default value if lexCounter is out of bounds
+        }
     }
 
     // "if" "(" <condition> ")" <block> [<else-if>]
@@ -59,6 +63,7 @@ public class SyntaxAnalyzer {
         lexCounter++;
         
         if (!parseBooleanExpression()) {
+            System.out.println("error di2");
             error = "Illegal Boolean Expression at line: " + findLine();
             
             // throw new Exception(error);
@@ -331,9 +336,12 @@ public class SyntaxAnalyzer {
     // <declaration>  ::= <keyword> <identifier> ";"
     public boolean parseDeclaration() throws SyntaxException {
         String error;
+
+        System.out.println("called toh");
         
         if (!lexTokens.get(0).equals("DECLARATION_KEYWORDS")) {
             error = "Illegal Start of Declaration: " + findLine();
+            System.out.println(1);
             
             // throw new Exception(error);
             throw new SyntaxException(findLine(), "Illegal Start of Declaration");
@@ -343,6 +351,7 @@ public class SyntaxAnalyzer {
         
         if (!lexTokens.get(0).equals("IDENT")) {
             error = "Illegal Declaration: " + findLine();
+            System.out.println(2);
             
             // throw new Exception(error);
             throw new SyntaxException(findLine(), "Illegal Declaration");
@@ -353,9 +362,11 @@ public class SyntaxAnalyzer {
         if (lexTokens.get(0).equals("ASSIGNMENT_OP")) {
             lexTokens.remove(0);
             lexCounter++;
+            System.out.println(3);
             
             // arithmetic expression | condition idk yet
             if (!parseArithmeticExpression()) {
+                System.out.println(7);
                 error = "Illegal Declaration: " + findLine();
                 
                 // throw new Exception(error);
@@ -365,6 +376,7 @@ public class SyntaxAnalyzer {
         
         if (!lexTokens.get(0).equals("SEMICOLON")) {
             error = "Illegal Declaration: " + findLine();
+            System.out.println(4);
             
             // throw new Exception(error);
             throw new SyntaxException(findLine(), "Illegal Declaration");
@@ -401,8 +413,12 @@ public class SyntaxAnalyzer {
         
         // ((x+y) == 7)
         if (parseTerm()) {
+            if (lexTokens.get(0).equals("SEMICOLON")){
+                return true;   
+            }
             
             if (lexTokens.get(0).equals("ARITHMETIC_OP")) {
+                System.out.println("abot here");
                 lexTokens.remove(0);
                 lexCounter++;
                 
@@ -444,63 +460,62 @@ public class SyntaxAnalyzer {
             //     return true;
             // }
             return false;
-        }
+    }
         
         // <boolean_expression> :: = <expression> | “(“ <boolean_expression> “)” |  <boolean_expression> <comparison-operator> <boolean_expression>
         public boolean parseBooleanExpression() throws SyntaxException {
             
             String error;
             
-        if (lexTokens.isEmpty()) {
-            error = "condition cannot be empty at line: " + findLine();
-            // throw new Exception(error);
-            throw new SyntaxException(findLine(), "condition cannot be empty");
-        }
+            if (lexTokens.isEmpty()) {
+                error = "condition cannot be empty at line: " + findLine();
+                // throw new Exception(error);
+                throw new SyntaxException(findLine(), "condition cannot be empty");
+            }
         
-        if (parseAnyExpression()) {
-            
-            if (lexTokens.get(0).equals("COMPARISON_OP")) {
-                lexTokens.remove(0);
-                lexCounter++;
+            if (parseAnyExpression()) {
+
+                if (lexTokens.get(0).equals("COMPARISON_OP")) {
+                    lexTokens.remove(0);
+                    lexCounter++;
                 
-                if (!parseAnyExpression()) {
+                    if (!parseAnyExpression()) {
+                        error = "illegal boolean expression at line: " + findLine();
+                        // throw new Exception(error);   
+                        throw new SyntaxException(findLine(), "illegal boolean expression");
+                    }
+                
+                }else if (lexTokens.get(0).equals("CLOSE_PAREN")) { // for single boolean expressions
+                    return true;
+                
+                }else{
                     error = "illegal boolean expression at line: " + findLine();
-                    // throw new Exception(error);   
+                    // throw new Exception(error);
                     throw new SyntaxException(findLine(), "illegal boolean expression");
                 }
+            }
+        
+        
+            if (lexTokens.get(0).equals("CLOSE_PAREN")) {
                 
-            }else if (lexTokens.get(0).equals("CLOSE_PAREN")) { // for single boolean expressions
+                if (lexTokens.size() > 1 && !lexTokens.get(1).equals("OPEN_BRACKET")) {
+                    lexTokens.remove(0);
+                    lexCounter++;
+                
+                    parseBooleanExpression();
+                }
+            
                 return true;
-                
-            }else{
-                error = "illegal boolean expression at line: " + findLine();
-                // throw new Exception(error);
-                throw new SyntaxException(findLine(), "illegal boolean expression");
             }
+
+            return false;
         }
-        
-        
-        if (lexTokens.get(0).equals("CLOSE_PAREN")) {
-            
-            if (!lexTokens.get(1).equals("OPEN_BRACKET")) {
-                lexTokens.remove(0);
-                lexCounter++;
-                
-                parseBooleanExpression();
-            }
-            
-            return true;
-        }
-        
-        
-        return false;
-    }
     
     public boolean parseAnyExpression() throws SyntaxException {
         
         if (lexTokens.get(0).equals("OPEN_PAREN")) {
             
-            if (lexTokens.get(1).equals("IDENT") || lexTokens.get(1).equals("INTEGER_LIT")) {
+            if (lexTokens.get(1).equals("IDENT") || lexTokens.get(1).equals("INTEGER_LIT") || lexTokens.get(1).equals("BOOLEAN_LIT")) {
                 
                 if (lexTokens.get(2).equals("ARITHMETIC_OP")) {
                     if (parseArithmeticExpression()) {
@@ -518,7 +533,7 @@ public class SyntaxAnalyzer {
             return false;
         }
         
-        if (lexTokens.get(0).equals("IDENT") || lexTokens.get(0).equals("INTEGER_LIT")) {
+        if (lexTokens.get(0).equals("IDENT") || lexTokens.get(0).equals("INTEGER_LIT") || lexTokens.get(0).equals("BOOLEAN_LIT")) {
             
             if (lexTokens.get(1).equals("ARITHMETIC_OP")) {
                 if (parseArithmeticExpression()) {
@@ -573,6 +588,7 @@ public class SyntaxAnalyzer {
     
     // <expression>   ::= <identifier> | <literal> 
     public boolean parseExpression() throws SyntaxException {
+        printTokens();
         String error;
         
         if (lexTokens.isEmpty()) {

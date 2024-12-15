@@ -2,9 +2,12 @@ package com.proglang.fap.demo.controllers;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.Queue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,19 +35,18 @@ public class Controller {
     }
 
     @RateLimited
-    @PostMapping("/analyze")
+    @PostMapping(value = "/analyze", produces = "application/json")
     public ResponseEntity<SyntaxReturn> analyze(@RequestBody SyntaxRequest rq) {
         // ArrayList<Line> lines = rq.getLines();
         // ArrayList<Token> tokens = new ArrayList<>();
 
-        final List<Line> lines = new ArrayList<>(); // Assume this is populated
-        final List<Token> tokens = new CopyOnWriteArrayList<>(); // Thread-safe list
+        final List<Line> lines = rq.getLines(); // Assume this is populated
+        final Queue<Token> tokens = new ConcurrentLinkedQueue<>();
 
         processLinesConcurrently(lines, tokens);
         
         LexicalAnalyzer la = new LexicalAnalyzer();
         for (Line line: lines){
-            System.out.println(line.getString());
             ArrayList<String> tokensInLine = la.tokenizeString(line.getString());
 
             for (String t : tokensInLine) {
@@ -54,40 +56,47 @@ public class Controller {
         }
 
         SyntaxAnalyzer sa = new SyntaxAnalyzer(tokens);
+        for (Token t: tokens){
+            System.out.println(t.getToken());
+        }
         try {
             sa.parseIfThenElse();
         } catch (SyntaxException e) {
-            System.out.println(e.getMessage());
+            System.out.println("may error");
             SyntaxReturn sr = new SyntaxReturn(e.getErrorCode(), e.getLine());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(sr);
+            System.out.println(sr.getErrorCode());
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(sr);
         }
-
+        
+        System.out.println("no error");
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(new SyntaxReturn("No Error", 0));
     }   
 
     // concurrency
-    private void processLinesConcurrently(List<Line> lines, List<Token> tokens) {
+    private void processLinesConcurrently(List<Line> lines, Queue<Token> tokens) {
         int numThreads = Runtime.getRuntime().availableProcessors();
         ExecutorService executor = Executors.newFixedThreadPool(numThreads);
-    
+        
+        BlockingQueue<Token> tokenQueue = new LinkedBlockingQueue<>();
+
         for (Line line : lines) {
             executor.submit(() -> {
                 try {
                     LexicalAnalyzer la = new LexicalAnalyzer(); // Thread-local instance
-                    System.out.println(line.getString());
                     ArrayList<String> tokensInLine = la.tokenizeString(line.getString());
-    
-                    tokensInLine.forEach(t -> {
+
+                    // Add tokens to the queue in order
+                    for (String t : tokensInLine) {
                         Token token = new Token(line.getLineNumber(), t);
-                        tokens.add(token); // Thread-safe addition
-                    });
+                        tokenQueue.put(token);  // Blocking operation ensures order
+                    }
                 } catch (Exception e) {
                     System.err.println("Error processing line " + line.getLineNumber() + ": " + e.getMessage());
                     e.printStackTrace();
                 }
             });
         }
-    
+
         executor.shutdown(); // Initiate shutdown
         try {
             if (!executor.awaitTermination(60, java.util.concurrent.TimeUnit.SECONDS)) {
@@ -100,4 +109,5 @@ public class Controller {
             System.err.println("Executor interrupted: " + e.getMessage());
         }
     }
+
 }

@@ -8,4 +8,20 @@ public class SyntaxReturn {
         this.errorCode = errorCode;
         this.lineNumber = lineNumber;
     }
+
+    public String getErrorCode(){
+        return this.errorCode;
+    }
+
+    public int getLineNumber(){
+        return this.lineNumber;
+    }
+
+    public void setErrorCode(String errorCode){
+        this.errorCode = errorCode;
+    }
+
+    public void setLineNumber(int lineNumber){
+        this.lineNumber = lineNumber;
+    }
 }

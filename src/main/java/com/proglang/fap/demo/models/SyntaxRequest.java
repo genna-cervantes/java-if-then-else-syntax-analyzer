@@ -5,19 +5,39 @@ import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class SyntaxRequest {
-    private ArrayList<Line> lines = new ArrayList<>();
+    private String code;
 
-    // functional programming
-    public void setCode(String code){
-        AtomicInteger index = new AtomicInteger();
-        lines.addAll(
-            Arrays.stream(code.split("\n"))
-            .map(line -> new Line(index.getAndIncrement(), line)) // increment index for each line
-            .toList()
-        );
+    public SyntaxRequest() {
+    }
+    
+    public String getCode() {
+        return code;
     }
 
-    public ArrayList<Line> getLines(){
-        return this.lines;
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    
+    // functional programming
+    public ArrayList<Line> getLines() {
+        System.out.println("code");
+        System.out.println(code);
+
+        ArrayList<Line> lines = new ArrayList<>();
+        AtomicInteger index = new AtomicInteger();
+        
+        // Normalize line breaks to \n and split lines
+        lines.addAll(
+            Arrays.stream(code.split("\\r?\\n"))  // This handles both \n and \r\n line endings
+                .map(line -> new Line(index.getAndIncrement(), line))  // Increment index for each line
+                .toList()
+        );
+
+        System.out.println("lines");
+        for (Line l: lines){
+            System.out.println(l.getString());
+        }
+        return lines;
     }
 }
