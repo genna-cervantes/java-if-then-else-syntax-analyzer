@@ -52,6 +52,13 @@
             <version>4.0.1</version> <!-- Use the appropriate version, 4.0.1 is commonly used -->
             <scope>provided</scope> <!-- 'provided' scope because it's provided by the container at runtime -->
         </dependency>
+
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>4.10.0</version>
+        </dependency>
+
     </dependencies>
 
     <build>
