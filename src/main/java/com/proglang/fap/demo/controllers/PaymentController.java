@@ -31,7 +31,7 @@ public class PaymentController {
     @PostMapping("/create-payment-intent")
     public ResponseEntity<String> createPaymentIntent(@RequestBody PaymentRequest paymentRequest) {
         // Ensure you're sending the correct format for "amount"
-        String requestBody = "{\"data\":{\"attributes\":{\"amount\":100000,\"description\":\"100 Credits\"}}}";
+        String requestBody = "{\"data\":{\"attributes\":{\"amount\":1000,\"description\":\"100 Credits\"}}}";
 
         // Log the request body for debugging purposes
         System.out.println("Request Body: " + requestBody);
